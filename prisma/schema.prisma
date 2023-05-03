@@ -6,18 +6,15 @@ generator client {
 }
 
 datasource db {
-    provider = "sqlite"
-    // NOTE: When using postgresql, mysql or sqlserver, uncomment the @db.Text annotations in model Account below
-    // Further reading:
-    // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
-    // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
-    url      = env("DATABASE_URL")
+    provider     = "mysql"
+    url          = env("DATABASE_URL")
+    relationMode = "prisma"
 }
 
-model Example {
-    id        String   @id @default(cuid())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+enum Role {
+    ADMIN
+    COMISSION
+    APPLICANT
 }
 
 // Necessary for Next auth
@@ -27,16 +24,17 @@ model Account {
     type              String
     provider          String
     providerAccountId String
-    refresh_token     String? // @db.Text
-    access_token      String? // @db.Text
+    refresh_token     String? @db.Text
+    access_token      String? @db.Text
     expires_at        Int?
     token_type        String?
     scope             String?
-    id_token          String? // @db.Text
+    id_token          String? @db.Text
     session_state     String?
     user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
     @@unique([provider, providerAccountId])
+    @@index([userId])
 }
 
 model Session {
@@ -45,16 +43,27 @@ model Session {
     userId       String
     expires      DateTime
     user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([userId])
 }
 
 model User {
-    id            String    @id @default(cuid())
-    name          String?
-    email         String?   @unique
-    emailVerified DateTime?
-    image         String?
-    accounts      Account[]
-    sessions      Session[]
+    id                          String                        @id @default(cuid())
+    name                        String?
+    username                    String                        @unique
+    email                       String?                       @unique
+    emailVerified               DateTime?
+    image                       String?
+    password                    String
+    role                        Role                          @default(APPLICANT)
+    active                      Boolean                       @default(true)
+    accounts                    Account[]
+    sessions                    Session[]
+    Application                 Application[]
+    UserDocumentApplication     UserDocumentApplication[]
+    PersonalDataApplication     PersonalDataApplication[]
+    RegistrationDataApplication RegistrationDataApplication[]
+    AcademicDataApplication     AcademicDataApplication[]
 }
 
 model VerificationToken {
@@ -63,4 +72,169 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+enum Step {
+    PERSONAL_DATA
+    REGISTRATION_DATA
+    ACADEMIC_DATA
+    CURRICULUM
+}
+
+enum Modality {
+    REGULAR_MASTER
+    SPECIAL_MASTER
+    DOCTORATE
+}
+
+enum VacancyType {
+    RACIAL_QUOTA
+    INDIGENOUS_QUOTA
+    DEFICIENT_QUOTA
+}
+
+model Document {
+    id                      String                    @id @default(cuid())
+    name                    String
+    active                  Boolean                   @default(true)
+    step                    Step
+    modality                String
+    vacancyType             String
+    score                   Int
+    maximumScore            Int
+    required                Boolean
+    description             String
+    ProcessDocument         ProcessDocument[]
+    UserDocumentApplication UserDocumentApplication[]
+}
+
+model Process {
+    id                        String                @id @default(cuid())
+    name                      String
+    applicationStartDate      DateTime
+    applicationEndDate        DateTime
+    status                    Boolean
+    active                    Boolean               @default(true)
+    regularMasterVacancies    Int
+    specialMasterVacancies    Int
+    regularDoctorateVacancies Int
+    Application               Application[]
+    ProcessDocument           ProcessDocument[]
+    ProcessResearchLine       ProcessResearchLine[]
+}
+
+model Application {
+    id                          String                        @id @default(cuid())
+    userId                      String
+    processId                   String
+    user                        User                          @relation(fields: [userId], references: [id], onDelete: Cascade)
+    process                     Process                       @relation(fields: [processId], references: [id], onDelete: Cascade)
+    PersonalDataApplication     PersonalDataApplication[]
+    RegistrationDataApplication RegistrationDataApplication[]
+    AcademicDataApplication     AcademicDataApplication[]
+    UserDocumentApplication     UserDocumentApplication[]
+
+    @@index([userId])
+    @@index([processId])
+}
+
+model UserDocumentApplication {
+    id            String      @id @default(cuid())
+    userId        String
+    documentId    String
+    applicationId String
+    url           String
+    step          String
+    quantity      Int?
+    user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+    document      Document    @relation(fields: [documentId], references: [id], onDelete: Cascade)
+    application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+    @@index([userId])
+    @@index([documentId])
+    @@index([applicationId])
+}
+
+model ProcessDocument {
+    id         String   @id @default(cuid())
+    processId  String
+    documentId String
+    process    Process  @relation(fields: [processId], references: [id], onDelete: Cascade)
+    document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+    @@index([processId])
+    @@index([documentId])
+}
+
+model ResearchLine {
+    id                          String                        @id @default(cuid())
+    name                        String
+    active                      Boolean                       @default(true)
+    TutorResearchLine           TutorResearchLine[]
+    ProcessResearchLine         ProcessResearchLine[]
+    RegistrationDataApplication RegistrationDataApplication[]
+}
+
+model TutorResearchLine {
+    id             String       @id @default(cuid())
+    name           String
+    researchLineId String
+    researchLine   ResearchLine @relation(fields: [researchLineId], references: [id], onDelete: Cascade)
+
+    @@index([researchLineId])
+}
+
+model ProcessResearchLine {
+    id             String       @id @default(cuid())
+    processId      String
+    researchLineId String
+    process        Process      @relation(fields: [processId], references: [id], onDelete: Cascade)
+    researchLine   ResearchLine @relation(fields: [researchLineId], references: [id], onDelete: Cascade)
+
+    @@index([processId])
+    @@index([researchLineId])
+}
+
+model PersonalDataApplication {
+    id            String      @id @default(cuid())
+    userId        String
+    applicationId String
+    phone         String
+    user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+    application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+    @@index([userId])
+    @@index([applicationId])
+}
+
+model RegistrationDataApplication {
+    id             String       @id @default(cuid())
+    userId         String
+    applicationId  String
+    researchLineId String
+    specialStudent Boolean
+    scholarship    Boolean
+    modality       String
+    user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+    application    Application  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+    researchLine   ResearchLine @relation(fields: [researchLineId], references: [id], onDelete: Cascade)
+
+    @@index([userId])
+    @@index([applicationId])
+    @@index([researchLineId])
+}
+
+model AcademicDataApplication {
+    id                       String      @id @default(cuid())
+    userId                   String
+    applicationId            String
+    courseArea               String
+    completionOrForecastYear String
+    institution              String
+    wasSpecialStudent        Boolean
+    user                     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+    application              Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+    @@index([userId])
+    @@index([applicationId])
 }
