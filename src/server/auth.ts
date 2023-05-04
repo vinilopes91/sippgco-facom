@@ -4,11 +4,12 @@ import {
   type NextAuthOptions,
   type DefaultSession,
 } from "next-auth";
-import DiscordProvider from "next-auth/providers/discord";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { env } from "@/env.mjs";
 import { prisma } from "@/server/db";
+import bcrypt from "bcrypt"
+import { type Role } from '@prisma/client'
+import { signInSchema } from "@/common/validation/auth";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -20,15 +21,13 @@ declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
       id: string;
-      // ...other properties
-      // role: UserRole;
+      role: Role;
     } & DefaultSession["user"];
   }
-
-  // interface User {
-  //   // ...other properties
-  //   // role: UserRole;
-  // }
+  
+  interface User {
+    role: Role;
+  }
 }
 
 /**
@@ -38,40 +37,66 @@ declare module "next-auth" {
  */
 export const authOptions: NextAuthOptions = {
   callbacks: {
-    session: ({ session, user }) => ({
-      ...session,
-      user: {
-        ...session.user,
-        id: user.id,
-      },
-    }),
+    jwt: ({ token, user }) => {
+      if (user) {
+        token.id = user.id;
+        token.email = user.email;
+        token.role = user.role;
+      }
+
+      return token;
+    },
+    session: ({ session, token, user }) => {
+      if (token) {
+        session.user.id = token.id as string;
+        session.user.role = user.role;
+        session.user.email = user.email;
+      }
+
+      return session;
+    },
+  },
+  jwt: {
+    secret: "super-secret",
+    maxAge: 15 * 24 * 30 * 60, // 15 days
+  },
+  pages: {
+    signIn: "/",
+    newUser: "/cadastro",
   },
   adapter: PrismaAdapter(prisma),
   providers: [
-    DiscordProvider({
-      clientId: env.DISCORD_CLIENT_ID,
-      clientSecret: env.DISCORD_CLIENT_SECRET,
-    }),
     CredentialsProvider({
-      id: 'signin',
-      name: "PPGCO - FACOM",
+      name: "PPGCO - FACOM/UFU",
       credentials: {
-        username: { label: "Usuário", type: "text", placeholder: "Usuário" },
-        password: { label: "Senha", type: "password" }
+        username: { label: "Usuário", type: "text", placeholder: "Digite o usuário" },
+        password: { label: "Senha", type: "password", placeholder: "Digite a senha" }
       },
-      authorize(credentials, req) {
-        console.log(credentials)
-        // Add logic here to look up the user from the credentials supplied
-        const user = { id: "1", name: "J Smith", email: "jsmith@example.com" }
-  
-        if (user) {
-          // Any object returned will be saved in `user` property of the JWT
-          return user
-        } else {
-          // If you return null then an error will be displayed advising the user to check their details.
+      authorize: async (credentials) => {
+        const creds = signInSchema.parse(credentials);
+        const { password, username } = creds
+
+        const user = await prisma.user.findUnique({
+          where: {
+            username
+          }
+        })
+
+        if (!user || !user.password) {
           return null
+        }
   
-          // You can also Reject this callback with an Error thus the user will be sent to the error page with the error message as a query parameter
+        const passwordMatch = await bcrypt.compare(password, user.password)
+        if (!passwordMatch) {
+          return null
+        }
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          username: user.username
         }
       }
     }),
