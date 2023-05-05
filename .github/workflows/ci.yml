@@ -21,17 +21,5 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Print Qualquer coisa
-        run: echo "Qualquer coisa ${{ secrets.NEXTAUTH_URL }}"
-      
-      - name: Print Qualquer coisa 2
-        run: echo "Qualquer coisa"
-
       - name: Lint
         run: npm run lint
-
-      - name: Print Environment Variable
-        run: echo $NEXTAUTH_URL
-
-      - name: Print Environment Variable 2
-        run: echo ${{secrets.NEXTAUTH_URL}}
