@@ -3,7 +3,9 @@ name: CI
 on: [push, pull_request]
 
 env:
-  DATABASE_URL: "https://fake.com"
+  DATABASE_URL: ${{secrets.DATABASE_URL}}
+  NEXTAUTH_SECRET: ${{secrets.NEXTAUTH_SECRET}}
+  NEXTAUTH_URL: ${{secrets.NEXTAUTH_URL}}
 
 jobs:
   build:
