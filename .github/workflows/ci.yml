@@ -21,6 +21,12 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Print Qualquer coisa
+        run: echo "Qualquer coisa $NEXTAUTH_URL"
+      
+      - name: Print Qualquer coisa 2
+        run: echo "Qualquer coisa"
+
       - name: Lint
         run: npm run lint
 
