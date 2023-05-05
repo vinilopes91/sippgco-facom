@@ -5,7 +5,6 @@ import { Role } from "@prisma/client";
 export default withAuth({
   callbacks: {
     authorized({ req, token }) {
-      console.log("authorized", token);
       if (req.nextUrl.pathname === "/cadastro") {
         return true;
       }
@@ -13,7 +12,6 @@ export default withAuth({
         return token?.role === Role.ADMIN;
       }
       if (req.nextUrl.pathname.startsWith("/candidato")) {
-        console.log("if", token);
         return token?.role === Role.APPLICANT;
       }
       return !!token;

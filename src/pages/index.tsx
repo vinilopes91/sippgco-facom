@@ -1,12 +1,14 @@
 import { type NextPage } from "next";
 import Link from "next/link";
 import { signIn, useSession } from "next-auth/react";
+import { useRouter } from "next/router";
+import Image from "next/image";
+import LogoFacom from "public/images/logo-facom.png";
 
 import { useForm } from "react-hook-form";
 import { type LoginSchema, signInSchema } from "@/common/validation/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-hot-toast";
-import { useRouter } from "next/router";
 
 const Home: NextPage = () => {
   const { register, handleSubmit } = useForm<LoginSchema>({
@@ -28,8 +30,6 @@ const Home: NextPage = () => {
       redirect: false,
     });
 
-    console.log("signIn response", response);
-
     if (response?.status === 401) {
       toast.error("Credenciais inválidas");
     } else if (!response?.ok) {
@@ -38,36 +38,58 @@ const Home: NextPage = () => {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
+    <main className="flex min-h-screen flex-col items-center justify-center">
       <form
-        className="flex h-screen w-full items-center justify-center"
         onSubmit={handleSubmit(onSubmit)}
+        className="flex w-full max-w-sm flex-col justify-center"
       >
-        <div className="card bg-base-100 w-96 shadow-xl">
-          <div className="card-body">
-            <h2 className="card-title">PPGCO</h2>
+        <Image
+          className="mx-auto mb-8 w-2/3"
+          alt="Logo FACOM"
+          src={LogoFacom}
+        />
+
+        <div className="mb-6 grid max-w-6xl gap-6">
+          <div className="w-full">
+            <label
+              htmlFor="username"
+              className="mb-2 block text-sm font-medium text-slate-950"
+            >
+              Usuário
+            </label>
             <input
               type="text"
-              placeholder="Digite seu usuário"
-              className="input input-bordered mt-2 w-full max-w-xs"
+              id="username"
+              className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
+              placeholder="Usuário"
+              required
               {...register("username")}
             />
+          </div>
+          <div>
+            <label
+              htmlFor="password"
+              className="mb-2 block text-sm font-medium text-slate-950"
+            >
+              Senha
+            </label>
             <input
               type="password"
-              placeholder="Digite sua senha"
-              className="input input-bordered my-2 w-full max-w-xs"
+              id="password"
+              className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
+              placeholder="Senha"
+              required
               {...register("password")}
             />
-            <div className="card-actions items-center justify-between">
-              <Link href="/cadastro" className="link">
-                Cadastro
-              </Link>
-              <button className="btn btn-secondary" type="submit">
-                Login
-              </button>
-            </div>
           </div>
         </div>
+        <button
+          type="submit"
+          className="mb-4 w-full rounded-lg bg-blue-700 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300"
+        >
+          Entrar
+        </button>
+        <Link href="/cadastro">Não tem uma conta? Cadastre aqui.</Link>
       </form>
     </main>
   );
