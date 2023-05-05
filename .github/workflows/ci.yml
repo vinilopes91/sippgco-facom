@@ -25,6 +25,7 @@ jobs:
         run: npm run lint
 
       - name: Print Environment Variable
-        run: echo $DATABASE_URL
-          echo $NEXTAUTH_SECRET
-          echo $NEXTAUTH_URL
+        run: echo $NEXTAUTH_URL
+
+      - name: Print Environment Variable 2
+        run: echo ${{secrets.NEXTAUTH_URL}}
