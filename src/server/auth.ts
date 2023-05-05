@@ -7,8 +7,8 @@ import {
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "@/server/db";
-import bcrypt from "bcrypt"
-import { type Role } from '@prisma/client'
+import bcrypt from "bcrypt";
+import { type Role } from "@prisma/client";
 import { signInSchema } from "@/common/validation/auth";
 
 /**
@@ -24,7 +24,6 @@ declare module "next-auth" {
       role: Role;
     } & DefaultSession["user"];
   }
-  
   interface User {
     role: Role;
   }
@@ -42,53 +41,60 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.email = user.email;
         token.role = user.role;
+        token.name = user.name;
       }
 
       return token;
     },
-    session: ({ session, token, user }) => {
+    session: ({ session, token }) => {
       if (token) {
         session.user.id = token.id as string;
-        session.user.role = user.role;
-        session.user.email = user.email;
+        session.user.role = token.role as Role;
+        session.user.email = token.email as string;
+        session.user.name = token.name as string;
       }
 
       return session;
     },
-  },
-  jwt: {
-    secret: "super-secret",
-    maxAge: 15 * 24 * 30 * 60, // 15 days
   },
   pages: {
     signIn: "/",
     newUser: "/cadastro",
   },
   adapter: PrismaAdapter(prisma),
+  session: { strategy: "jwt" },
   providers: [
     CredentialsProvider({
       name: "PPGCO - FACOM/UFU",
       credentials: {
-        username: { label: "Usuário", type: "text", placeholder: "Digite o usuário" },
-        password: { label: "Senha", type: "password", placeholder: "Digite a senha" }
+        username: {
+          label: "Usuário",
+          type: "text",
+          placeholder: "Digite o usuário",
+        },
+        password: {
+          label: "Senha",
+          type: "password",
+          placeholder: "Digite a senha",
+        },
       },
       authorize: async (credentials) => {
         const creds = signInSchema.parse(credentials);
-        const { password, username } = creds
+        const { password, username } = creds;
 
         const user = await prisma.user.findUnique({
           where: {
-            username
-          }
-        })
+            username,
+          },
+        });
 
         if (!user || !user.password) {
-          return null
+          return null;
         }
-  
-        const passwordMatch = await bcrypt.compare(password, user.password)
+
+        const passwordMatch = await bcrypt.compare(password, user.password);
         if (!passwordMatch) {
-          return null
+          return null;
         }
 
         return {
@@ -96,9 +102,9 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           name: user.name,
           role: user.role,
-          username: user.username
-        }
-      }
+          username: user.username,
+        };
+      },
     }),
   ],
 };

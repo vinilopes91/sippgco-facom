@@ -9,19 +9,14 @@ import { api } from "@/utils/api";
 
 const SignUp: NextPage = () => {
   const router = useRouter();
-  const { register, handleSubmit, formState } = useForm<SignUpSchema>({
+  const { register, handleSubmit } = useForm<SignUpSchema>({
     resolver: zodResolver(signUpSchema),
   });
-
-  const { errors } = formState
-
-  console.log(errors)
 
   const { mutateAsync, isLoading } = api.auth.signUp.useMutation();
   
   const onSubmit = 
     async (data: SignUpSchema) => {
-      console.log(data)
       const result = await mutateAsync(data);
       if (result.status === 201) {
         await router.push("/")
@@ -37,7 +32,6 @@ const SignUp: NextPage = () => {
       <main>
         <form
           className="flex items-center justify-center h-screen w-full"
-          // eslint-disable-next-line @typescript-eslint/no-misused-promises
           onSubmit={handleSubmit(onSubmit)}
         >
           <div className="card w-96 bg-base-100 shadow-xl">

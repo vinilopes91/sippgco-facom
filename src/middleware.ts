@@ -5,14 +5,16 @@ import { Role } from "@prisma/client";
 export default withAuth({
   callbacks: {
     authorized({ req, token }) {
-      // `/admin` requires admin role
+      if (req.nextUrl.pathname === "/cadastro") {
+        return true;
+      }
       if (req.nextUrl.pathname.startsWith("/secretario")) {
         return token?.role === Role.ADMIN;
       }
       if (req.nextUrl.pathname.startsWith("/candidato")) {
         return token?.role === Role.APPLICANT;
       }
-      return true;
+      return !!token;
     },
   },
   pages: {
@@ -22,11 +24,5 @@ export default withAuth({
 });
 
 export const config = {
-  matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico).*)",
-    "/candidato",
-    "/secretario",
-    "/candidato/:path*",
-    "/secretario/:path*",
-  ],
+  matcher: ["/candidato/:path*", "/secretario/:path*"],
 };
