@@ -1,9 +1,17 @@
-type props = {
-  children: React.ReactNode;
-};
+const Container = (props: React.ComponentProps<"div">) => {
+  const defaultClasses = "container mx-auto px-4";
 
-const Container = ({ children }: props) => {
-  return <div className="container mx-auto px-4">{children}</div>;
+  return (
+    <div
+      className={
+        props.className
+          ? `${defaultClasses} ${props.className}`
+          : defaultClasses
+      }
+    >
+      {props.children}
+    </div>
+  );
 };
 
 export default Container;
