@@ -2,87 +2,119 @@ import type { NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import Image from "next/image";
+import { useSession } from "next-auth/react";
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+
 import { signUpSchema, type SignUpSchema } from "@/common/validation/auth";
 import { api } from "@/utils/api";
+import LogoFacom from "public/images/logo-facom.png";
+import Container from "@/components/Container";
+import Input from "@/components/Input";
+import Button from "@/components/Button";
 
-const SignUp: NextPage = () => {
+const Cadastro: NextPage = () => {
   const router = useRouter();
-  const { register, handleSubmit } = useForm<SignUpSchema>({
+  const session = useSession();
+
+  if (session.data?.user.role === "APPLICANT") {
+    void router.push("/candidato");
+  } else if (session.data?.user.role === "ADMIN") {
+    void router.push("/secretario");
+  }
+
+  const { register, handleSubmit, formState } = useForm<SignUpSchema>({
     resolver: zodResolver(signUpSchema),
   });
 
+  const { errors } = formState;
+
   const { mutateAsync, isLoading } = api.auth.signUp.useMutation();
-  
-  const onSubmit = 
-    async (data: SignUpSchema) => {
-      const result = await mutateAsync(data);
-      if (result.status === 201) {
-        await router.push("/")
-      }
-    };
+
+  const onSubmit = async (data: SignUpSchema) => {
+    const result = await mutateAsync(data);
+    if (result.status === 201) {
+      await router.push("/");
+    }
+  };
 
   return (
-    <div>
+    <>
       <Head>
         <title>PPGCO - Cadastro de usuário</title>
       </Head>
 
-      <main>
-        <form
-          className="flex items-center justify-center h-screen w-full"
-          onSubmit={handleSubmit(onSubmit)}
-        >
-          <div className="card w-96 bg-base-100 shadow-xl">
-            <div className="card-body">
-              <h2 className="card-title">Create an account!</h2>
-              <input
-                type="text"
-                placeholder="Type your name..."
-                className="input input-bordered w-full max-w-xs my-2"
-                {...register("name")}
+      <main className="flex min-h-screen flex-col items-center justify-center">
+        <Container>
+          <div className="flex flex-col items-center justify-center">
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="flex w-full max-w-sm flex-col justify-center"
+            >
+              <Image
+                className="mx-auto mb-8 rounded-sm sm:w-full md:w-2/3"
+                alt="Logo FACOM"
+                src={LogoFacom}
+                priority
               />
-              <input
-                type="email"
-                placeholder="Type your email..."
-                className="input input-bordered w-full max-w-xs"
-                {...register("email")}
-              />
-              <input
-                type="text"
-                placeholder="Type your username..."
-                className="input input-bordered w-full max-w-xs my-2"
-                {...register("username")}
-              />
-              <input
-                type="password"
-                placeholder="Type your password..."
-                className="input input-bordered w-full max-w-xs my-2"
-                {...register("password")}
-              />
-              <input
-                type="password"
-                placeholder="Confirm your password..."
-                className="input input-bordered w-full max-w-xs my-2"
-                maxLength={12}
-                minLength={3}
-                {...register("confirmPassword")}
-              />
-              <div className="card-actions items-center justify-between">
-                <Link href="/" className="link">
-                  Ir para o login
-                </Link>
-                <button className="btn btn-secondary" type="submit" disabled={isLoading}>
-                  Registrar
-                </button>
+              <div className="mb-6 max-w-6xl space-y-2">
+                <Input
+                  name="name"
+                  label="Nome completo"
+                  placeholder="Nome completo"
+                  required
+                  register={register}
+                  error={errors.name}
+                />
+                <Input
+                  name="email"
+                  label="E-mail"
+                  placeholder="E-mail"
+                  required
+                  register={register}
+                  error={errors.email}
+                />
+                <Input
+                  name="username"
+                  label="Usuário"
+                  placeholder="Usuário"
+                  required
+                  register={register}
+                  error={errors.username}
+                />
+                <Input
+                  name="password"
+                  type="password"
+                  label="Senha"
+                  placeholder="Senha"
+                  required
+                  register={register}
+                  error={errors.password}
+                />
+                <Input
+                  name="confirmPassword"
+                  type="password"
+                  label="Confirmar senha"
+                  placeholder="Confirmar senha"
+                  required
+                  register={register}
+                  error={errors.confirmPassword}
+                />
               </div>
-            </div>
+              <Button type="submit" fullWidth disabled={isLoading}>
+                Registrar
+              </Button>
+              <Link className="w-fit" href="/">
+                Retornar ao login.
+              </Link>
+            </form>
           </div>
-        </form>
+        </Container>
       </main>
-    </div>
+    </>
   );
 };
 
-export default SignUp;
+export default Cadastro;

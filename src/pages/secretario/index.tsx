@@ -1,6 +1,7 @@
+import { type NextPage } from "next";
 import { signOut } from "next-auth/react";
 
-const SecretarioHome = () => (
+const SecretarioHome: NextPage = () => (
   <div>
     Secretário... <button onClick={() => signOut()}>Logout</button>
   </div>
