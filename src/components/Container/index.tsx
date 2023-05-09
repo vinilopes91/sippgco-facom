@@ -1,13 +1,13 @@
-const Container = (props: React.ComponentProps<"div">) => {
-  const defaultClasses = "container mx-auto px-4";
+import clsx from "clsx";
 
+const Container = (props: React.ComponentProps<"div">) => {
   return (
     <div
-      className={
+      className={clsx(
         props.className
-          ? `${defaultClasses} ${props.className}`
-          : defaultClasses
-      }
+          ? `container mx-auto px-4 ${props.className}`
+          : "container mx-auto px-4"
+      )}
     >
       {props.children}
     </div>

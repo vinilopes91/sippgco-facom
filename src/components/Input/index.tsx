@@ -1,4 +1,5 @@
 import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
+import clsx from "clsx";
 import {
   type Path,
   type FieldValues,
@@ -19,27 +20,21 @@ const Input = <T extends FieldValues>(props: InputProps<T>) => {
   const { register, label, error, ...inputProps } = props;
 
   const styleVariants = {
-    default: "border-gray-300 focus:border-blue-500 focus:ring-blue-500",
-    error: "border-red-500 focus:border-red-500 focus:ring-red-500",
+    error: "input input-bordered input-error w-full",
   };
 
   return (
-    <div>
-      <label
-        htmlFor={props.name}
-        className="mb-1 block text-sm font-medium text-slate-950"
-      >
-        {label}
+    <div className="form-control w-full">
+      <label className="label">
+        <span className="label-text">{label}</span>
       </label>
-
       <input
-        className={`block w-full rounded-lg border bg-gray-50 p-2.5 text-sm text-gray-900 outline-none ${
-          error?.message ? styleVariants.error : styleVariants.default
-        }`}
+        className={clsx("input-bordered input-primary input w-full", {
+          [styleVariants.error]: error?.message,
+        })}
         {...inputProps}
         {...register(props.name)}
       />
-
       {error && (
         <div className="mt-1 flex items-center gap-1">
           <ExclamationCircleIcon color={tailwindColors.red[500]} width={20} />

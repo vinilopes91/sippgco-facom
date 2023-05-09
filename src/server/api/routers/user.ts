@@ -1,21 +1,26 @@
-import { z } from "zod";
-
 import {
   createTRPCRouter,
-  publicProcedure,
+  enforceUserIsAdmin,
   protectedProcedure,
 } from "@/server/api/trpc";
 
 export const userRouter = createTRPCRouter({
-  hello: publicProcedure
-    .input(z.object({ text: z.string() }))
-    .query(({ input }) => {
-      return {
-        greeting: `Hello ${input.text}`,
-      };
-    }),
-
-  getSecretMessage: protectedProcedure.query(() => {
-    return "you can now see this secret message!";
+  list: protectedProcedure.use(enforceUserIsAdmin).query(({ ctx }) => {
+    const userList = ctx.prisma.user.findMany({
+      where: {
+        active: true,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        username: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+    return userList;
   }),
 });

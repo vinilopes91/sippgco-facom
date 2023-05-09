@@ -30,6 +30,8 @@ model User {
     PersonalDataApplication     PersonalDataApplication[]
     RegistrationDataApplication RegistrationDataApplication[]
     AcademicDataApplication     AcademicDataApplication[]
+    createdAt                   DateTime                      @default(now())
+    updatedAt                   DateTime                      @updatedAt
 }
 
 model VerificationToken {
@@ -72,6 +74,14 @@ model Document {
     description             String
     ProcessDocument         ProcessDocument[]
     UserDocumentApplication UserDocumentApplication[]
+    createdAt               DateTime                  @default(now())
+    updatedAt               DateTime                  @updatedAt
+}
+
+enum ProcessStatus {
+    DRAFT
+    ACTIVE
+    FINISHED
 }
 
 model Process {
@@ -79,7 +89,7 @@ model Process {
     name                      String
     applicationStartDate      DateTime
     applicationEndDate        DateTime
-    status                    Boolean
+    status                    ProcessStatus
     active                    Boolean               @default(true)
     regularMasterVacancies    Int
     specialMasterVacancies    Int
@@ -87,6 +97,8 @@ model Process {
     Application               Application[]
     ProcessDocument           ProcessDocument[]
     ProcessResearchLine       ProcessResearchLine[]
+    createdAt                 DateTime              @default(now())
+    updatedAt                 DateTime              @updatedAt
 }
 
 model Application {
@@ -99,6 +111,8 @@ model Application {
     RegistrationDataApplication RegistrationDataApplication[]
     AcademicDataApplication     AcademicDataApplication[]
     UserDocumentApplication     UserDocumentApplication[]
+    createdAt                   DateTime                      @default(now())
+    updatedAt                   DateTime                      @updatedAt
 
     @@index([userId])
     @@index([processId])
@@ -115,6 +129,8 @@ model UserDocumentApplication {
     user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
     document      Document    @relation(fields: [documentId], references: [id], onDelete: Cascade)
     application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+    createdAt     DateTime    @default(now())
+    updatedAt     DateTime    @updatedAt
 
     @@index([userId])
     @@index([documentId])
@@ -127,6 +143,8 @@ model ProcessDocument {
     documentId String
     process    Process  @relation(fields: [processId], references: [id], onDelete: Cascade)
     document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+    createdAt  DateTime @default(now())
+    updatedAt  DateTime @updatedAt
 
     @@index([processId])
     @@index([documentId])
@@ -139,6 +157,8 @@ model ResearchLine {
     TutorResearchLine           TutorResearchLine[]
     ProcessResearchLine         ProcessResearchLine[]
     RegistrationDataApplication RegistrationDataApplication[]
+    createdAt                   DateTime                      @default(now())
+    updatedAt                   DateTime                      @updatedAt
 }
 
 model TutorResearchLine {
@@ -146,6 +166,8 @@ model TutorResearchLine {
     name           String
     researchLineId String
     researchLine   ResearchLine @relation(fields: [researchLineId], references: [id], onDelete: Cascade)
+    createdAt      DateTime     @default(now())
+    updatedAt      DateTime     @updatedAt
 
     @@index([researchLineId])
 }
@@ -156,6 +178,8 @@ model ProcessResearchLine {
     researchLineId String
     process        Process      @relation(fields: [processId], references: [id], onDelete: Cascade)
     researchLine   ResearchLine @relation(fields: [researchLineId], references: [id], onDelete: Cascade)
+    createdAt      DateTime     @default(now())
+    updatedAt      DateTime     @updatedAt
 
     @@index([processId])
     @@index([researchLineId])
@@ -168,6 +192,8 @@ model PersonalDataApplication {
     phone         String
     user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
     application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+    createdAt     DateTime    @default(now())
+    updatedAt     DateTime    @updatedAt
 
     @@index([userId])
     @@index([applicationId])
@@ -180,10 +206,13 @@ model RegistrationDataApplication {
     researchLineId String
     specialStudent Boolean
     scholarship    Boolean
-    modality       String
+    modality       Modality
+    vacancyType    VacancyType
     user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
     application    Application  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
     researchLine   ResearchLine @relation(fields: [researchLineId], references: [id], onDelete: Cascade)
+    createdAt      DateTime     @default(now())
+    updatedAt      DateTime     @updatedAt
 
     @@index([userId])
     @@index([applicationId])
@@ -200,6 +229,8 @@ model AcademicDataApplication {
     wasSpecialStudent        Boolean
     user                     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
     application              Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+    createdAt                DateTime    @default(now())
+    updatedAt                DateTime    @updatedAt
 
     @@index([userId])
     @@index([applicationId])

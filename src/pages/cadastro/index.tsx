@@ -13,7 +13,6 @@ import { api } from "@/utils/api";
 import LogoFacom from "public/images/logo-facom.png";
 import Container from "@/components/Container";
 import Input from "@/components/Input";
-import Button from "@/components/Button";
 
 const Cadastro: NextPage = () => {
   const router = useRouter();
@@ -59,7 +58,7 @@ const Cadastro: NextPage = () => {
                 src={LogoFacom}
                 priority
               />
-              <div className="mb-6 max-w-6xl space-y-2">
+              <div className="mb-6 flex max-w-6xl flex-col items-center space-y-2">
                 <Input
                   name="name"
                   label="Nome completo"
@@ -103,10 +102,14 @@ const Cadastro: NextPage = () => {
                   error={errors.confirmPassword}
                 />
               </div>
-              <Button type="submit" fullWidth disabled={isLoading}>
+              <button
+                className="btn-primary btn"
+                type="submit"
+                disabled={isLoading}
+              >
                 Registrar
-              </Button>
-              <Link className="w-fit" href="/">
+              </button>
+              <Link className="mt-3 w-fit" href="/">
                 Retornar ao login.
               </Link>
             </form>

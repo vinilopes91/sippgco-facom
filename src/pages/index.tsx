@@ -13,7 +13,6 @@ import LogoFacom from "public/images/logo-facom.png";
 import Input from "@/components/Input";
 import Container from "@/components/Container";
 import { useState } from "react";
-import Button from "@/components/Button";
 
 const Home: NextPage = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -91,10 +90,14 @@ const Home: NextPage = () => {
                 error={errors.password}
               />
             </div>
-            <Button type="submit" fullWidth disabled={isLoading}>
+            <button
+              className="btn-primary btn"
+              type="submit"
+              disabled={isLoading}
+            >
               Entrar
-            </Button>
-            <Link className="w-fit" href="/cadastro">
+            </button>
+            <Link className="mt-2 w-fit" href="/cadastro">
               Não tem uma conta? Cadastre aqui.
             </Link>
           </form>

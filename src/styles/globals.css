@@ -3,7 +3,11 @@
 @tailwind utilities;
 
 body {
-  @apply bg-primary-100 text-slate-950;
-
+  @apply text-slate-950;
+  
   overscroll-behavior: none;
+}
+
+a {
+  @apply text-blue-600 underline;
 }

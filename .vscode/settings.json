@@ -3,5 +3,6 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true
   },
-  "prettier.printWidth": 100
+  "prettier.printWidth": 100,
+  "typescript.tsdk": "node_modules/typescript/lib"
 }
