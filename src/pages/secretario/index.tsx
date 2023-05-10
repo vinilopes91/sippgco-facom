@@ -32,6 +32,9 @@ const SecretarioHome: NextPage = () => {
             ))
           )}
         </ul>
+        <Link className="btn-primary btn mt-6" href="secretario/novo-processo">
+          Adicionar novo processo
+        </Link>
       </div>
     </Base>
   );

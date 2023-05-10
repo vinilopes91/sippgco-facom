@@ -20,25 +20,19 @@ export default {
     },
   },
   daisyui: {
+    logs: false,
     themes: [
       {
         mytheme: {
           primary: "#3433c1",
-
+          "primary-content": "#ffffff",
           secondary: "#6766d0",
-
           accent: "#f97316",
-
           neutral: "#1e293b",
-
           "base-100": "#dbeafe",
-
           info: "#42ADBB",
-
           success: "#22BB33",
-
           warning: "#E97F14",
-
           error: "#DF1A2F",
         },
       },

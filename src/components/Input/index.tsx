@@ -5,6 +5,7 @@ import {
   type FieldValues,
   type UseFormRegister,
   type FieldError,
+  type RegisterOptions,
 } from "react-hook-form";
 import tailwindColors from "tailwindcss/colors";
 
@@ -14,26 +15,47 @@ type InputProps<T extends FieldValues> =
     name: Path<T>;
     register: UseFormRegister<T>;
     error?: FieldError;
+    registerOptions?: RegisterOptions;
+    positiveIntegerInput?: boolean;
   };
 
 const Input = <T extends FieldValues>(props: InputProps<T>) => {
-  const { register, label, error, ...inputProps } = props;
+  const {
+    register,
+    label,
+    error,
+    registerOptions,
+    positiveIntegerInput,
+    ...inputProps
+  } = props;
 
   const styleVariants = {
     error: "input input-bordered input-error w-full",
   };
 
+  const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    const notAllowedKeys = ["-", "+", "e", "E", ".", ","];
+    if (notAllowedKeys.includes(event.key)) {
+      event.preventDefault();
+    }
+  };
+
+  if (positiveIntegerInput) {
+    inputProps.onKeyDown = handleKeyPress;
+  }
+
   return (
     <div className="form-control w-full">
-      <label className="label">
-        <span className="label-text">{label}</span>
+      <label className="label" htmlFor={props.name}>
+        <span className="label-text font-medium">{label}</span>
       </label>
       <input
         className={clsx("input-bordered input-primary input w-full", {
           [styleVariants.error]: error?.message,
         })}
+        id={props.name}
         {...inputProps}
-        {...register(props.name)}
+        {...register(props.name, registerOptions)}
       />
       {error && (
         <div className="mt-1 flex items-center gap-1">

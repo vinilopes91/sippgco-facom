@@ -4,9 +4,27 @@ export const createProcessSchema = z.object({
   name: z.string().min(1, "Campo obrigatório"),
   applicationStartDate: z.string().datetime("Data inválida"),
   applicationEndDate: z.string().datetime("Data inválida"),
-  regularMasterVacancies: z.number().int().nonnegative("Valor inválido"),
-  specialMasterVacancies: z.number().int().nonnegative("Valor inválido"),
-  regularDoctorateVacancies: z.number().int().nonnegative("Valor inválido"),
+  regularMasterVacancies: z
+    .number({
+      invalid_type_error: "Campo inválido",
+      required_error: "Campo obrigatório",
+    })
+    .int()
+    .nonnegative("Valor inválido"),
+  specialMasterVacancies: z
+    .number({
+      invalid_type_error: "Campo inválido",
+      required_error: "Campo obrigatório",
+    })
+    .int()
+    .nonnegative("Valor inválido"),
+  regularDoctorateVacancies: z
+    .number({
+      invalid_type_error: "Campo inválido",
+      required_error: "Campo obrigatório",
+    })
+    .int()
+    .nonnegative("Valor inválido"),
   researchLines: z.array(z.string().cuid()),
   documents: z.array(z.string().cuid()),
 });
