@@ -25,8 +25,8 @@ export const createProcessSchema = z.object({
     })
     .int()
     .nonnegative("Valor inválido"),
-  researchLines: z.array(z.string().cuid()),
-  documents: z.array(z.string().cuid()),
+  researchLines: z.array(z.string().cuid()).nonempty("Campo obrigatório"),
+  documents: z.array(z.string().cuid()).nonempty("Campo obrigatório"),
 });
 
 export const updateProcessSchema = createProcessSchema.partial().extend({

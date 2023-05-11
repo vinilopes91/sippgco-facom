@@ -14,6 +14,9 @@ export const researchLineRouter = createTRPCRouter({
       orderBy: {
         createdAt: "desc",
       },
+      include: {
+        TutorResearchLine: true,
+      },
     });
 
     return researchLineList;

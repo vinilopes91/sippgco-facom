@@ -11,25 +11,77 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { api } from "@/utils/api";
 import CreateResearchLineModal from "@/components/Modals/CreateResearchLine";
+import ResearchLineTable from "@/components/Tables/ResearchLine";
 
 const NewProcess: NextPage = () => {
   const [researchLinesSelected, setResearchLinesSelected] = useState<string[]>(
     []
   );
-  const [documentsSelected, setDocumentsSelected] = useState<string[]>([]);
+  // const [documentsSelected, setDocumentsSelected] = useState<string[]>([]);
   const [openResearchLineModal, setOpenResearchLineModal] = useState(false);
 
   const { data: researchLineList } = api.researchLine.list.useQuery();
   const { data: documentsList } = api.document.list.useQuery();
 
-  const { register, handleSubmit, formState, getValues } =
+  const { register, handleSubmit, formState, setValue, getValues } =
     useForm<CreateProcessSchema>({
       resolver: zodResolver(createProcessSchema),
+      defaultValues: {
+        name: "",
+        applicationStartDate: "",
+        applicationEndDate: "",
+        regularDoctorateVacancies: 0,
+        regularMasterVacancies: 0,
+        specialMasterVacancies: 0,
+        researchLines: [],
+        documents: [],
+      },
     });
 
-  const { errors } = formState;
+  const handleSelectAllResearchLineClick = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    if (
+      event.target.checked &&
+      researchLineList &&
+      researchLineList.length > 0
+    ) {
+      const allResearchLines = researchLineList.map(
+        (researchLine) => researchLine.id
+      );
+      setResearchLinesSelected(allResearchLines);
+      setValue("researchLines", allResearchLines as [string, ...string[]]);
+      return;
+    }
+    setResearchLinesSelected([]);
+    setValue("researchLines", [] as unknown as [string, ...string[]]);
+  };
 
-  console.log(getValues());
+  const handleClickResearchLineRow = (
+    _event: React.MouseEvent<unknown>,
+    id: string
+  ) => {
+    const selectedIndex = researchLinesSelected.indexOf(id);
+    let newSelected: string[] = [];
+
+    if (selectedIndex === -1) {
+      newSelected = newSelected.concat(researchLinesSelected, id);
+    } else if (selectedIndex === 0) {
+      newSelected = newSelected.concat(researchLinesSelected.slice(1));
+    } else if (selectedIndex === researchLinesSelected.length - 1) {
+      newSelected = newSelected.concat(researchLinesSelected.slice(0, -1));
+    } else if (selectedIndex > 0) {
+      newSelected = newSelected.concat(
+        researchLinesSelected.slice(0, selectedIndex),
+        researchLinesSelected.slice(selectedIndex + 1)
+      );
+    }
+
+    setValue("researchLines", newSelected as [string, ...string[]]);
+    setResearchLinesSelected(newSelected);
+  };
+
+  const { errors } = formState;
 
   const submitForm = handleSubmit(() => {
     console.log("submit");
@@ -115,36 +167,20 @@ const NewProcess: NextPage = () => {
           <div className="w-full">
             <h2 className="text-2xl font-bold">Linhas de pesquisa</h2>
             <div className="mt-4 w-full overflow-x-auto">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>
-                      <label>
-                        <input type="checkbox" className="checkbox" />
-                      </label>
-                    </th>
-                    <th>Name</th>
-                    <th>Tutores</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>
-                      <label>
-                        <input type="checkbox" className="checkbox" />
-                      </label>
-                    </td>
-                    <td>Linha de pesquisa 1</td>
-                    <th>
-                      <button type="button" className="btn-primary btn-xs btn">
-                        Visualizar tutores
-                      </button>
-                    </th>
-                  </tr>
-                </tbody>
-              </table>
+              <ResearchLineTable
+                data={researchLineList || []}
+                handleClickResearchLineRow={handleClickResearchLineRow}
+                handleSelectAllResearchLineClick={
+                  handleSelectAllResearchLineClick
+                }
+                researchLinesSelected={researchLinesSelected}
+              />
             </div>
-            <button type="button" className="btn-primary btn mt-4">
+            <button
+              type="button"
+              className="btn-primary btn mt-4"
+              onClick={() => setOpenResearchLineModal(true)}
+            >
               Adicionar linha de pesquisa
             </button>
           </div>
@@ -160,18 +196,12 @@ const NewProcess: NextPage = () => {
             </button>
           </div>
         </form>
-        <button
-          type="button"
-          className="btn"
-          onClick={() => setOpenResearchLineModal(true)}
-        >
-          abrir modal
-        </button>
-        <CreateResearchLineModal
-          open={openResearchLineModal}
-          onClose={() => setOpenResearchLineModal(false)}
-        />
       </div>
+
+      <CreateResearchLineModal
+        open={openResearchLineModal}
+        onClose={() => setOpenResearchLineModal(false)}
+      />
     </Base>
   );
 };
