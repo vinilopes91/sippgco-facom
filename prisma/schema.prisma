@@ -68,8 +68,8 @@ model Document {
     step                    Step
     modality                String
     vacancyType             String
-    score                   Int
-    maximumScore            Int
+    score                   Int?
+    maximumScore            Int?
     required                Boolean
     description             String
     ProcessDocument         ProcessDocument[]

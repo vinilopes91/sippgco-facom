@@ -23,8 +23,8 @@ export const createDocumentSchema = z.object({
       VacancyType.RACIAL_QUOTA,
     ])
   ),
-  score: z.number().nonnegative("Valor inválido"),
-  maximumScore: z.number().nonnegative("Valor inválido"),
+  score: z.number().nonnegative("Valor inválido").optional(),
+  maximumScore: z.number().nonnegative("Valor inválido").optional(),
   required: z.boolean(),
   description: z.string(),
 });

@@ -4,6 +4,7 @@ import {
   protectedProcedure,
 } from "@/server/api/trpc";
 import { createDocumentSchema } from "@/common/validation/document";
+import { type Prisma } from "@prisma/client";
 
 export const documentRouter = createTRPCRouter({
   list: protectedProcedure.query(async ({ ctx }) => {
@@ -33,17 +34,25 @@ export const documentRouter = createTRPCRouter({
         vacancyType,
       } = input;
 
+      const newDocument: Prisma.DocumentCreateInput = {
+        name,
+        description,
+        required,
+        modality: modality.join(","),
+        step,
+        vacancyType: vacancyType.join(","),
+      };
+
+      if (score) {
+        newDocument.score = score;
+      }
+
+      if (maximumScore) {
+        newDocument.maximumScore = maximumScore;
+      }
+
       const documentCreated = await ctx.prisma.document.create({
-        data: {
-          name,
-          description,
-          maximumScore,
-          modality: modality.join(","),
-          required,
-          score,
-          step,
-          vacancyType: vacancyType.join(","),
-        },
+        data: newDocument,
       });
 
       return documentCreated;

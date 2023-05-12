@@ -7,6 +7,17 @@ export type BaseModalProps = {
   open: boolean;
   disableClickOutside?: boolean;
   onClose(): void;
+  smSize?:
+    | "sm:max-w-sm"
+    | "sm:max-w-md"
+    | "sm:max-w-lg"
+    | "sm:max-w-xl"
+    | "sm:max-w-2xl"
+    | "sm:max-w-3xl"
+    | "sm:max-w-4xl"
+    | "sm:max-w-5xl"
+    | "sm:max-w-6xl"
+    | "sm:max-w-7xl";
 };
 
 const Modal = ({
@@ -14,6 +25,7 @@ const Modal = ({
   open,
   disableClickOutside,
   onClose,
+  smSize,
 }: BaseModalProps) => {
   const ref = useRef(null);
 
@@ -30,7 +42,7 @@ const Modal = ({
         "modal-open": open,
       })}
     >
-      <div className="modal-box" ref={ref}>
+      <div className={clsx("modal-box", smSize && smSize)} ref={ref}>
         {children}
       </div>
     </div>

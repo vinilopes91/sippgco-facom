@@ -9,16 +9,21 @@ import {
   type CreateProcessSchema,
 } from "@/common/validation/process";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { api } from "@/utils/api";
+import { api, type RouterOutputs } from "@/utils/api";
 import CreateResearchLineModal from "@/components/Modals/CreateResearchLine";
 import ResearchLineTable from "@/components/Tables/ResearchLine";
+import { useResearchLineTable } from "@/components/Tables/ResearchLine/utils";
+import DocumentsTable from "@/components/Tables/Documents";
+import { useDocumentsTable } from "@/components/Tables/Documents/utils";
+import CreateProcessDocumentModal from "@/components/Modals/CreateProcessDocument";
 
 const NewProcess: NextPage = () => {
   const [researchLinesSelected, setResearchLinesSelected] = useState<string[]>(
     []
   );
-  // const [documentsSelected, setDocumentsSelected] = useState<string[]>([]);
+  const [documentsSelected, setDocumentsSelected] = useState<string[]>([]);
   const [openResearchLineModal, setOpenResearchLineModal] = useState(false);
+  const [openDocumentModal, setOpenDocumentModal] = useState(false);
 
   const { data: researchLineList } = api.researchLine.list.useQuery();
   const { data: documentsList } = api.document.list.useQuery();
@@ -38,48 +43,21 @@ const NewProcess: NextPage = () => {
       },
     });
 
-  const handleSelectAllResearchLineClick = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    if (
-      event.target.checked &&
-      researchLineList &&
-      researchLineList.length > 0
-    ) {
-      const allResearchLines = researchLineList.map(
-        (researchLine) => researchLine.id
-      );
-      setResearchLinesSelected(allResearchLines);
-      setValue("researchLines", allResearchLines as [string, ...string[]]);
-      return;
-    }
-    setResearchLinesSelected([]);
-    setValue("researchLines", [] as unknown as [string, ...string[]]);
-  };
+  const { handleClickResearchLineRow, handleSelectAllResearchLineClick } =
+    useResearchLineTable(
+      researchLineList as RouterOutputs["researchLine"]["list"],
+      setResearchLinesSelected,
+      setValue,
+      researchLinesSelected
+    );
 
-  const handleClickResearchLineRow = (
-    _event: React.MouseEvent<unknown>,
-    id: string
-  ) => {
-    const selectedIndex = researchLinesSelected.indexOf(id);
-    let newSelected: string[] = [];
-
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(researchLinesSelected, id);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(researchLinesSelected.slice(1));
-    } else if (selectedIndex === researchLinesSelected.length - 1) {
-      newSelected = newSelected.concat(researchLinesSelected.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        researchLinesSelected.slice(0, selectedIndex),
-        researchLinesSelected.slice(selectedIndex + 1)
-      );
-    }
-
-    setValue("researchLines", newSelected as [string, ...string[]]);
-    setResearchLinesSelected(newSelected);
-  };
+  const { handleClickDocumentsRow, handleSelectAllDocumentsClick } =
+    useDocumentsTable(
+      documentsList as RouterOutputs["document"]["list"],
+      setDocumentsSelected,
+      setValue,
+      documentsSelected
+    );
 
   const { errors } = formState;
 
@@ -187,7 +165,21 @@ const NewProcess: NextPage = () => {
 
           <div className="w-full">
             <h2 className="text-2xl font-bold">Documentos</h2>
-            <div></div>
+            <div className="mt-4 w-full overflow-x-auto">
+              <DocumentsTable
+                data={documentsList || []}
+                handleClickDocumentRow={handleClickDocumentsRow}
+                handleSelectAllDocumentsClick={handleSelectAllDocumentsClick}
+                documentsSelected={documentsSelected}
+              />
+            </div>
+            <button
+              type="button"
+              className="btn-primary btn mt-4"
+              onClick={() => setOpenDocumentModal(true)}
+            >
+              Adicionar documento
+            </button>
           </div>
 
           <div className="flex justify-end">
@@ -201,6 +193,10 @@ const NewProcess: NextPage = () => {
       <CreateResearchLineModal
         open={openResearchLineModal}
         onClose={() => setOpenResearchLineModal(false)}
+      />
+      <CreateProcessDocumentModal
+        open={openDocumentModal}
+        onClose={() => setOpenDocumentModal(false)}
       />
     </Base>
   );
