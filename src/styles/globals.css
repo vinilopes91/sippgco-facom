@@ -10,10 +10,28 @@
   }
 }
 
+html {
+  --scrollbarBG: #dbeaf;
+  --thumbBG: #3433c1;
+}
+*::-webkit-scrollbar {
+  width: 11px;
+}
+*::-webkit-scrollbar-track {
+  background: var(--scrollbarBG);
+}
+*::-webkit-scrollbar-thumb {
+  background-color: var(--thumbBG);
+  border-radius: 6px;
+  border: 3px solid var(--scrollbarBG);
+}
+
 body {
   @apply text-slate-950;
 
   overscroll-behavior: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--thumbBG) var(--scrollbarBG);
 }
 
 a {

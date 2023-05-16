@@ -3,6 +3,8 @@ import {
   type CreateDocumentSchema,
 } from "@/common/validation/document";
 import Input from "@/components/Input";
+import Select from "@/components/Select";
+import TextArea from "@/components/TextArea";
 import BaseModal, { type BaseModalProps } from "@/components/Modals/BaseModal";
 import { api } from "@/utils/api";
 import { XCircleIcon } from "@heroicons/react/24/outline";
@@ -10,20 +12,20 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import clsx from "clsx";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
+import { modalityMapper, stepMapper, vacancyTypeMapper } from "@/utils/mapper";
+import { Modality, Step, VacancyType } from "@prisma/client";
 
 const CreateProcessDocumentModal = (
   props: Omit<BaseModalProps, "children" | "disableClickOutside">
 ) => {
   const { onClose, open } = props;
-  const { register, handleSubmit, formState, reset, getValues } =
+  const { register, handleSubmit, formState, reset } =
     useForm<CreateDocumentSchema>({
       resolver: zodResolver(createDocumentSchema),
       defaultValues: {
         required: false,
       },
     });
-
-  console.log(getValues());
 
   const ctx = api.useContext();
 
@@ -74,7 +76,7 @@ const CreateProcessDocumentModal = (
         onSubmit={handleSubmit(onSubmit)}
         className="mt-4 flex w-full flex-col justify-center"
       >
-        <div className="flex flex-col gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 sm:gap-2">
           <Input
             name="name"
             label="Nome"
@@ -84,7 +86,48 @@ const CreateProcessDocumentModal = (
             maxLength={40}
           />
 
-          {/* TODO SELECT ETAPA, MODALIDAD, TIPO DE VAGA*/}
+          <Select
+            name="step"
+            label="Etapa"
+            placeholder="Etapa"
+            register={register}
+            error={errors.step}
+            required
+          >
+            {Object.keys(Step).map((step) => (
+              <option key={step} value={step}>
+                {stepMapper[step as keyof typeof Step]}
+              </option>
+            ))}
+          </Select>
+
+          <Select
+            name="modality"
+            label="Modalidade"
+            register={register}
+            multiple
+            required
+          >
+            {Object.keys(Modality).map((modality) => (
+              <option key={modality} value={modality}>
+                {modalityMapper[modality as keyof typeof Modality]}
+              </option>
+            ))}
+          </Select>
+
+          <Select
+            name="vacancyType"
+            label="Tipo de vaga"
+            register={register}
+            multiple
+            required
+          >
+            {Object.keys(VacancyType).map((vacancyType) => (
+              <option key={vacancyType} value={vacancyType}>
+                {vacancyTypeMapper[vacancyType as keyof typeof VacancyType]}
+              </option>
+            ))}
+          </Select>
 
           <Input
             name="score"
@@ -112,18 +155,26 @@ const CreateProcessDocumentModal = (
             }}
             positiveIntegerInput
           />
+        </div>
+        <div className="w-full">
+          <TextArea
+            name="description"
+            label="Descrição"
+            placeholder="Descrição"
+            register={register}
+            error={errors.description}
+            maxLength={255}
+          />
+        </div>
 
-          <div className="mt-4 flex items-center gap-2">
-            <input
-              className="checkbox"
-              type="checkbox"
-              id="required"
-              {...register("required")}
-            />
-            <label htmlFor="required">Obrigatório</label>
-          </div>
-
-          {/* TODO TEXTAREA*/}
+        <div className="mt-4 flex items-center gap-2">
+          <input
+            className="checkbox"
+            type="checkbox"
+            id="required"
+            {...register("required")}
+          />
+          <label htmlFor="required">Documento obrigatório</label>
         </div>
 
         <div className="modal-action">

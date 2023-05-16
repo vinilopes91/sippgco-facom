@@ -9,54 +9,44 @@ import {
 } from "react-hook-form";
 import tailwindColors from "tailwindcss/colors";
 
-type InputProps<T extends FieldValues> =
-  React.ComponentPropsWithoutRef<"input"> & {
-    label: string;
-    name: Path<T>;
-    register: UseFormRegister<T>;
-    error?: FieldError;
-    registerOptions?: RegisterOptions;
-    positiveIntegerInput?: boolean;
-  };
+type SelectProps<T extends FieldValues> = React.ComponentProps<"select"> & {
+  label: string;
+  name: Path<T>;
+  register: UseFormRegister<T>;
+  error?: FieldError;
+  registerOptions?: RegisterOptions;
+};
 
-const Input = <T extends FieldValues>(props: InputProps<T>) => {
-  const {
-    register,
-    label,
-    error,
-    registerOptions,
-    positiveIntegerInput,
-    ...inputProps
-  } = props;
+const Select = <T extends FieldValues>(props: SelectProps<T>) => {
+  const { register, label, error, registerOptions, children, ...inputProps } =
+    props;
 
   const styleVariants = {
-    error: "input-error",
+    error: "select-error",
   };
-
-  const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    const notAllowedKeys = ["-", "+", "e", "E", ".", ","];
-    if (notAllowedKeys.includes(event.key)) {
-      event.preventDefault();
-    }
-  };
-
-  if (positiveIntegerInput) {
-    inputProps.onKeyDown = handleKeyPress;
-  }
 
   return (
     <div className="form-control w-full">
       <label className="label" htmlFor={props.name}>
         <span className="label-text font-medium">{label}</span>
       </label>
-      <input
-        className={clsx("input-primary input w-full", {
+      <select
+        className={clsx("select-primary select w-full", {
           [styleVariants.error]: error?.message,
         })}
         id={props.name}
         {...inputProps}
         {...register(props.name, registerOptions)}
-      />
+      >
+        {children}
+      </select>
+      {props.multiple && (
+        <label className="label">
+          <span className="label-text-alt">
+            Mantenha pressionado a tecla (ctrl) para selecionar várias opções
+          </span>
+        </label>
+      )}
       {error && (
         <div className="mt-1 flex items-center gap-1">
           <ExclamationCircleIcon color={tailwindColors.red[500]} width={20} />
@@ -67,4 +57,4 @@ const Input = <T extends FieldValues>(props: InputProps<T>) => {
   );
 };
 
-export default Input;
+export default Select;

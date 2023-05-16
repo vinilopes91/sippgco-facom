@@ -10,6 +10,7 @@ type ResearchLineTableProps = {
     event: React.ChangeEvent<HTMLInputElement>
   ) => void;
   researchLinesSelected: string[];
+  errorMessage?: string;
 };
 
 const ResearchLineTable = ({
@@ -17,6 +18,7 @@ const ResearchLineTable = ({
   researchLinesSelected,
   handleClickResearchLineRow,
   handleSelectAllResearchLineClick,
+  errorMessage,
 }: ResearchLineTableProps) => {
   const isSelected = (id: string) => researchLinesSelected.indexOf(id) !== -1;
 
@@ -76,6 +78,15 @@ const ResearchLineTable = ({
           </tr>
         ))}
       </tbody>
+      {errorMessage && (
+        <tfoot>
+          <tr>
+            <td colSpan={8} className="text-red-500">
+              Selecione ao menos um documento
+            </td>
+          </tr>
+        </tfoot>
+      )}
     </table>
   );
 };

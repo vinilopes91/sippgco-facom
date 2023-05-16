@@ -9,48 +9,28 @@ import {
 } from "react-hook-form";
 import tailwindColors from "tailwindcss/colors";
 
-type InputProps<T extends FieldValues> =
-  React.ComponentPropsWithoutRef<"input"> & {
-    label: string;
-    name: Path<T>;
-    register: UseFormRegister<T>;
-    error?: FieldError;
-    registerOptions?: RegisterOptions;
-    positiveIntegerInput?: boolean;
-  };
+type TextAreaProps<T extends FieldValues> = React.ComponentProps<"textarea"> & {
+  label: string;
+  name: Path<T>;
+  register: UseFormRegister<T>;
+  error?: FieldError;
+  registerOptions?: RegisterOptions;
+};
 
-const Input = <T extends FieldValues>(props: InputProps<T>) => {
-  const {
-    register,
-    label,
-    error,
-    registerOptions,
-    positiveIntegerInput,
-    ...inputProps
-  } = props;
+const TextArea = <T extends FieldValues>(props: TextAreaProps<T>) => {
+  const { register, label, error, registerOptions, ...inputProps } = props;
 
   const styleVariants = {
-    error: "input-error",
+    error: "textarea-error",
   };
-
-  const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    const notAllowedKeys = ["-", "+", "e", "E", ".", ","];
-    if (notAllowedKeys.includes(event.key)) {
-      event.preventDefault();
-    }
-  };
-
-  if (positiveIntegerInput) {
-    inputProps.onKeyDown = handleKeyPress;
-  }
 
   return (
     <div className="form-control w-full">
       <label className="label" htmlFor={props.name}>
         <span className="label-text font-medium">{label}</span>
       </label>
-      <input
-        className={clsx("input-primary input w-full", {
+      <textarea
+        className={clsx("textarea-primary textarea h-24 w-full", {
           [styleVariants.error]: error?.message,
         })}
         id={props.name}
@@ -67,4 +47,4 @@ const Input = <T extends FieldValues>(props: InputProps<T>) => {
   );
 };
 
-export default Input;
+export default TextArea;

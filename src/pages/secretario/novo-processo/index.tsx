@@ -16,6 +16,9 @@ import { useResearchLineTable } from "@/components/Tables/ResearchLine/utils";
 import DocumentsTable from "@/components/Tables/Documents";
 import { useDocumentsTable } from "@/components/Tables/Documents/utils";
 import CreateProcessDocumentModal from "@/components/Modals/CreateProcessDocument";
+import { toast } from "react-hot-toast";
+import { useRouter } from "next/router";
+import clsx from "clsx";
 
 const NewProcess: NextPage = () => {
   const [researchLinesSelected, setResearchLinesSelected] = useState<string[]>(
@@ -27,21 +30,37 @@ const NewProcess: NextPage = () => {
 
   const { data: researchLineList } = api.researchLine.list.useQuery();
   const { data: documentsList } = api.document.list.useQuery();
+  const ctx = api.useContext();
+  const router = useRouter();
 
-  const { register, handleSubmit, formState, setValue, getValues } =
+  const { register, handleSubmit, formState, setValue, getValues, reset } =
     useForm<CreateProcessSchema>({
       resolver: zodResolver(createProcessSchema),
       defaultValues: {
         name: "",
         applicationStartDate: "",
         applicationEndDate: "",
-        regularDoctorateVacancies: 0,
-        regularMasterVacancies: 0,
-        specialMasterVacancies: 0,
         researchLines: [],
         documents: [],
       },
     });
+
+  const { mutateAsync, isLoading } = api.process.create.useMutation({
+    onSuccess: () => {
+      void ctx.document.list.invalidate();
+      toast.success("Processo criado com sucesso!");
+      reset();
+      router.back();
+    },
+    onError: (e) => {
+      const errorMessage = e.data?.zodError?.fieldErrors.content;
+      if (errorMessage && errorMessage[0]) {
+        toast.error(errorMessage[0]);
+      } else {
+        toast.error("Falha ao criar documento! Tente novamente mais tarde.");
+      }
+    },
+  });
 
   const { handleClickResearchLineRow, handleSelectAllResearchLineClick } =
     useResearchLineTable(
@@ -60,15 +79,17 @@ const NewProcess: NextPage = () => {
     );
 
   const { errors } = formState;
+  console.log("🚀 ~ file: index.tsx:63 ~ errors:", errors);
+  console.log("🚀 ~ file: index.tsx:32 ~ getValues:", getValues());
 
-  const submitForm = handleSubmit(() => {
-    console.log("submit");
-  });
+  const onSubmit = async (data: CreateProcessSchema) => {
+    return mutateAsync(data);
+  };
 
   return (
     <Base pageTitle="Novo processo" backBtn>
       <div className="mt-6 rounded-lg bg-white p-6">
-        <form onSubmit={submitForm} className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           <div className="w-full">
             <h2 className="text-2xl font-bold">Dados gerais</h2>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
@@ -152,6 +173,7 @@ const NewProcess: NextPage = () => {
                   handleSelectAllResearchLineClick
                 }
                 researchLinesSelected={researchLinesSelected}
+                errorMessage={errors.researchLines?.message}
               />
             </div>
             <button
@@ -171,6 +193,7 @@ const NewProcess: NextPage = () => {
                 handleClickDocumentRow={handleClickDocumentsRow}
                 handleSelectAllDocumentsClick={handleSelectAllDocumentsClick}
                 documentsSelected={documentsSelected}
+                errorMessage={errors.documents?.message}
               />
             </div>
             <button
@@ -183,7 +206,11 @@ const NewProcess: NextPage = () => {
           </div>
 
           <div className="flex justify-end">
-            <button type="submit" className="btn-primary btn">
+            <button
+              type="submit"
+              disabled={isLoading}
+              className={clsx("btn-primary btn", isLoading && "loading")}
+            >
               Criar processo
             </button>
           </div>

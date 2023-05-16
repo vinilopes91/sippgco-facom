@@ -1,4 +1,6 @@
 import { type RouterOutputs } from "@/utils/api";
+import { modalityMapper, stepMapper, vacancyTypeMapper } from "@/utils/mapper";
+import { type VacancyType, type Document, type Modality } from "@prisma/client";
 
 type DocumentsTableProps = {
   data: RouterOutputs["document"]["list"];
@@ -10,6 +12,7 @@ type DocumentsTableProps = {
     event: React.ChangeEvent<HTMLInputElement>
   ) => void;
   documentsSelected: string[];
+  errorMessage?: string;
 };
 
 const DocumentsTable = ({
@@ -17,8 +20,32 @@ const DocumentsTable = ({
   documentsSelected,
   handleClickDocumentRow,
   handleSelectAllDocumentsClick,
+  errorMessage,
 }: DocumentsTableProps) => {
   const isSelected = (id: string) => documentsSelected.indexOf(id) !== -1;
+
+  const getModalities = (document: Document) => {
+    const modalities = document.modality.split(",");
+
+    if (modalities.length === 3) return "Todas";
+
+    return modalities
+      .map((modality) => modalityMapper[modality as keyof typeof Modality])
+      .join(", ");
+  };
+
+  const getVacancyTypes = (document: Document) => {
+    const vacancyTypes = document.vacancyType.split(",");
+
+    if (vacancyTypes.length === 3) return "Todas";
+
+    return vacancyTypes
+      .map(
+        (vacancyType) =>
+          vacancyTypeMapper[vacancyType as keyof typeof VacancyType]
+      )
+      .join(", ");
+  };
 
   return (
     <table className="table w-full">
@@ -70,15 +97,24 @@ const DocumentsTable = ({
               </label>
             </td>
             <td>{document.name}</td>
-            <td>{document.step}</td>
-            <td>{document.modality}</td>
-            <td>{document.vacancyType}</td>
+            <td>{stepMapper[document.step]}</td>
+            <td>{getModalities(document)}</td>
+            <td>{getVacancyTypes(document)}</td>
             <td>{document.required ? "Sim" : "Não"}</td>
             <td>{document.score || "-"}</td>
             <td>{document.maximumScore || "-"}</td>
           </tr>
         ))}
       </tbody>
+      {errorMessage && (
+        <tfoot>
+          <tr>
+            <td colSpan={8} className="text-red-500">
+              Selecione ao menos um documento
+            </td>
+          </tr>
+        </tfoot>
+      )}
     </table>
   );
 };
