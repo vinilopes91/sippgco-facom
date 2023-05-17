@@ -1,4 +1,4 @@
-import { Step, Modality, VacancyType } from "@prisma/client";
+import { Step, Modality, VacancyType, ProcessStatus } from "@prisma/client";
 
 export const stepMapper = {
   [Step.ACADEMIC_DATA]: "Dados acadêmicos",
@@ -17,4 +17,10 @@ export const vacancyTypeMapper = {
   [VacancyType.DEFICIENT_QUOTA]: "Pessoas com deficiência",
   [VacancyType.INDIGENOUS_QUOTA]: "Indígenas",
   [VacancyType.RACIAL_QUOTA]: "Pretos, pardos e indígenas",
+} as const;
+
+export const processStatusMapper = {
+  [ProcessStatus.ACTIVE]: "Processo ativo",
+  [ProcessStatus.DRAFT]: "Rascunho",
+  [ProcessStatus.FINISHED]: "Processo finalizado",
 } as const;

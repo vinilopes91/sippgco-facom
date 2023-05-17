@@ -31,6 +31,22 @@ export const processRouter = createTRPCRouter({
           id: input.id,
           active: true,
         },
+        include: {
+          ProcessDocument: {
+            include: {
+              document: true,
+            },
+          },
+          ProcessResearchLine: {
+            include: {
+              researchLine: {
+                include: {
+                  TutorResearchLine: true,
+                },
+              },
+            },
+          },
+        },
       });
 
       if (!process) {

@@ -1,6 +1,6 @@
 import { type RouterOutputs } from "@/utils/api";
-import { modalityMapper, stepMapper, vacancyTypeMapper } from "@/utils/mapper";
-import { type VacancyType, type Document, type Modality } from "@prisma/client";
+import { stepMapper } from "@/utils/mapper";
+import { getModalities, getVacancyTypes } from "./utils";
 
 type DocumentsTableProps = {
   data: RouterOutputs["document"]["list"];
@@ -23,29 +23,6 @@ const DocumentsTable = ({
   errorMessage,
 }: DocumentsTableProps) => {
   const isSelected = (id: string) => documentsSelected.indexOf(id) !== -1;
-
-  const getModalities = (document: Document) => {
-    const modalities = document.modality.split(",");
-
-    if (modalities.length === 3) return "Todas";
-
-    return modalities
-      .map((modality) => modalityMapper[modality as keyof typeof Modality])
-      .join(", ");
-  };
-
-  const getVacancyTypes = (document: Document) => {
-    const vacancyTypes = document.vacancyType.split(",");
-
-    if (vacancyTypes.length === 3) return "Todas";
-
-    return vacancyTypes
-      .map(
-        (vacancyType) =>
-          vacancyTypeMapper[vacancyType as keyof typeof VacancyType]
-      )
-      .join(", ");
-  };
 
   return (
     <table className="table w-full">

@@ -88,7 +88,7 @@ const NewProcess: NextPage = () => {
 
   return (
     <Base pageTitle="Novo processo" backBtn>
-      <div className="mt-6 rounded-lg bg-white p-6">
+      <div className="mt-6 rounded-lg bg-white p-6 drop-shadow-sm">
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           <div className="w-full">
             <h2 className="text-2xl font-bold">Dados gerais</h2>
