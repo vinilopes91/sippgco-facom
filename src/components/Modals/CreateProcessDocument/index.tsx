@@ -31,7 +31,7 @@ const CreateProcessDocumentModal = (
 
   const { errors } = formState;
 
-  const { mutateAsync, isLoading } = api.document.create.useMutation({
+  const { mutate, isLoading } = api.document.create.useMutation({
     onSuccess: () => {
       void ctx.document.list.invalidate();
       toast.success("Documento criado com sucesso!");
@@ -48,8 +48,8 @@ const CreateProcessDocumentModal = (
     },
   });
 
-  const onSubmit = async (data: CreateDocumentSchema) => {
-    return mutateAsync(data);
+  const onSubmit = (data: CreateDocumentSchema) => {
+    return mutate(data);
   };
 
   const handleCloseModal = () => {

@@ -70,7 +70,7 @@ const CreateResearchLineModal = (
 
   const { errors } = formState;
 
-  const { mutateAsync, isLoading } = api.researchLine.create.useMutation({
+  const { mutate, isLoading } = api.researchLine.create.useMutation({
     onSuccess: () => {
       void ctx.researchLine.list.invalidate();
       toast.success("Linha de pesquisa criada com sucesso!");
@@ -91,8 +91,8 @@ const CreateResearchLineModal = (
     },
   });
 
-  const onSubmit = async (data: CreateResearchLineSchema) => {
-    return mutateAsync(data);
+  const onSubmit = (data: CreateResearchLineSchema) => {
+    return mutate(data);
   };
 
   const handleCloseModal = () => {

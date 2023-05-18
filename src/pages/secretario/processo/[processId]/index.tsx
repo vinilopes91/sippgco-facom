@@ -8,19 +8,66 @@ import {
   getVacancyTypes,
   getModalities,
 } from "@/components/Tables/Documents/utils";
+import { toast } from "react-hot-toast";
+import clsx from "clsx";
+import ProcessStatusBadge from "@/components/ProcessStatusBadge";
 
 const ProcessDetail: NextPage = () => {
   const router = useRouter();
+
+  const ctx = api.useContext();
 
   if (!router.query.processId) {
     return <div>404</div>;
   }
 
-  const { data: processData, isLoading } = api.process.get.useQuery({
-    id: router.query.processId as string,
-  });
+  const { data: processData, isLoading: isLoadingProcess } =
+    api.process.get.useQuery({
+      id: router.query.processId as string,
+    });
 
-  if (isLoading) {
+  const { isLoading: isActivating, mutate: activateProcess } =
+    api.process.activateProcess.useMutation({
+      onSuccess: () => {
+        void ctx.process.list.invalidate();
+        void ctx.process.get.invalidate({
+          id: router.query.processId as string,
+        });
+        toast.success("Processo ativado com sucesso!");
+      },
+      onError: (e) => {
+        const errorMessage = e.data?.zodError?.fieldErrors.content;
+        if (errorMessage && errorMessage[0]) {
+          toast.error(errorMessage[0]);
+        } else {
+          toast.error("Falha ao ativar processo! Tente novamente mais tarde.");
+        }
+      },
+    });
+
+  const { isLoading: isFinishing, mutate: finishProcess } =
+    api.process.finishProcess.useMutation({
+      onSuccess: () => {
+        void ctx.process.list.invalidate();
+        void ctx.process.get.invalidate({
+          id: router.query.processId as string,
+        });
+        toast.success("Processo finalizado com sucesso!");
+        router.back();
+      },
+      onError: (e) => {
+        const errorMessage = e.data?.zodError?.fieldErrors.content;
+        if (errorMessage && errorMessage[0]) {
+          toast.error(errorMessage[0]);
+        } else {
+          toast.error(
+            "Falha ao finalizar processo! Tente novamente mais tarde."
+          );
+        }
+      },
+    });
+
+  if (isLoadingProcess) {
     return <div>Loading...</div>;
   }
 
@@ -31,10 +78,43 @@ const ProcessDetail: NextPage = () => {
   return (
     <Base pageTitle={processData.name} backBtn>
       <div className="mt-6 rounded-lg bg-white p-6 drop-shadow-sm">
-        <h2 className="text-2xl font-bold">Dados gerais</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold">Dados gerais</h2>
+          {processData.status === "DRAFT" && (
+            <button
+              className={clsx("btn-primary btn", isActivating && "loading")}
+              type="button"
+              disabled={isActivating}
+              onClick={() =>
+                activateProcess({
+                  id: processData.id,
+                })
+              }
+            >
+              Ativar processo
+            </button>
+          )}
+          {processData.status === "FINISHED" && (
+            <button
+              className={clsx("btn-primary btn", isFinishing && "loading")}
+              type="button"
+              disabled={isFinishing}
+              onClick={() =>
+                finishProcess({
+                  id: processData.id,
+                })
+              }
+            >
+              Finalizar processo
+            </button>
+          )}
+        </div>
         <div className="mt-2">
           <p className="font-medium">
             Nome: <span className="font-normal">{processData.name}</span>
+          </p>
+          <p className="font-medium">
+            Status: <ProcessStatusBadge status={processData.status} />
           </p>
           <p className="font-medium">
             Data inicial de inscrição:{" "}

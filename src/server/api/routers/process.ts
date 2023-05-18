@@ -9,22 +9,43 @@ import {
 } from "@/common/validation/process";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
+import { ProcessStatus } from "@prisma/client";
+import { endOfDay, startOfDay } from "date-fns";
 
 export const processRouter = createTRPCRouter({
-  list: protectedProcedure.query(async ({ ctx }) => {
-    const processList = await ctx.prisma.process.findMany({
-      where: {
-        active: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+  list: protectedProcedure
+    .input(
+      z
+        .object({
+          status: z
+            .enum([
+              ProcessStatus.ACTIVE,
+              ProcessStatus.DRAFT,
+              ProcessStatus.FINISHED,
+            ])
+            .optional(),
+        })
+        .optional()
+    )
+    .query(async ({ ctx, input }) => {
+      const processList = await ctx.prisma.process.findMany({
+        where: {
+          active: true,
+          status: input?.status,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
 
-    return processList;
-  }),
+      return processList;
+    }),
   get: protectedProcedure
-    .input(z.object({ id: z.string().cuid() }))
+    .input(
+      z.object({
+        id: z.string().cuid(),
+      })
+    )
     .query(async ({ input, ctx }) => {
       const process = await ctx.prisma.process.findFirst({
         where: {
@@ -185,8 +206,8 @@ export const processRouter = createTRPCRouter({
         data: {
           name,
           status: "DRAFT",
-          applicationEndDate,
-          applicationStartDate,
+          applicationEndDate: endOfDay(new Date(applicationEndDate)),
+          applicationStartDate: startOfDay(new Date(applicationStartDate)),
           regularDoctorateVacancies,
           regularMasterVacancies,
           specialMasterVacancies,

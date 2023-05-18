@@ -33,7 +33,7 @@ const NewProcess: NextPage = () => {
   const ctx = api.useContext();
   const router = useRouter();
 
-  const { register, handleSubmit, formState, setValue, getValues, reset } =
+  const { register, handleSubmit, formState, setValue, reset } =
     useForm<CreateProcessSchema>({
       resolver: zodResolver(createProcessSchema),
       defaultValues: {
@@ -45,7 +45,7 @@ const NewProcess: NextPage = () => {
       },
     });
 
-  const { mutateAsync, isLoading } = api.process.create.useMutation({
+  const { mutate, isLoading } = api.process.create.useMutation({
     onSuccess: () => {
       void ctx.document.list.invalidate();
       toast.success("Processo criado com sucesso!");
@@ -79,11 +79,9 @@ const NewProcess: NextPage = () => {
     );
 
   const { errors } = formState;
-  console.log("🚀 ~ file: index.tsx:63 ~ errors:", errors);
-  console.log("🚀 ~ file: index.tsx:32 ~ getValues:", getValues());
 
-  const onSubmit = async (data: CreateProcessSchema) => {
-    return mutateAsync(data);
+  const onSubmit = (data: CreateProcessSchema) => {
+    return mutate(data);
   };
 
   return (

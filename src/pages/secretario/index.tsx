@@ -1,10 +1,9 @@
 import DeleteProcessModal from "@/components/Modals/DeleteProcess";
+import ProcessStatusBadge from "@/components/ProcessStatusBadge";
 import Base from "@/layout/Base";
 import { api } from "@/utils/api";
-import { processStatusMapper } from "@/utils/mapper";
-import { PencilSquareIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { TrashIcon } from "@heroicons/react/24/outline";
 import { type Process } from "@prisma/client";
-import clsx from "clsx";
 import { type NextPage } from "next";
 import Link from "next/link";
 import { useState } from "react";
@@ -19,13 +18,6 @@ const SecretarioHome: NextPage = () => {
     setProcessSelected(process);
     setDeleteProcessModal(true);
   };
-
-  const processBadgeClasses = (processData: Process) =>
-    clsx("rounded-full px-2 py-1", {
-      badge: processData.status === "DRAFT",
-      "badge-info badge": processData.status === "ACTIVE",
-      "badge-success badge text-white": processData.status === "FINISHED",
-    });
 
   return (
     <Base>
@@ -44,18 +36,16 @@ const SecretarioHome: NextPage = () => {
                   >
                     {processData.name}
                   </Link>
-                  <span className={processBadgeClasses(processData)}>
-                    {processStatusMapper[processData.status]}
-                  </span>
+                  <ProcessStatusBadge status={processData.status} />
                   <button
                     className="btn-ghost btn h-fit min-h-fit p-0 text-red-500"
                     onClick={() => handleClickDeleteButton(processData)}
                   >
                     <TrashIcon width={20} />
                   </button>
-                  <button className="btn-ghost btn h-fit min-h-fit p-0 text-blue-600">
+                  {/* <button className="btn-ghost btn h-fit min-h-fit p-0 text-blue-600">
                     <PencilSquareIcon width={20} />
-                  </button>
+                  </button> */}
                 </div>
               </li>
             ))

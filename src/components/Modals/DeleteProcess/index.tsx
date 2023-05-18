@@ -14,7 +14,7 @@ const DeleteProcessModal = (
 
   const ctx = api.useContext();
 
-  const { mutateAsync, isLoading } = api.process.delete.useMutation({
+  const { mutate, isLoading } = api.process.delete.useMutation({
     onSuccess: () => {
       void ctx.process.list.invalidate();
       toast.success("Processo removido com sucesso!");
@@ -30,10 +30,10 @@ const DeleteProcessModal = (
     },
   });
 
-  const handleClickDeleteButton = async () => {
+  const handleClickDeleteButton = () => {
     return (
       process?.id &&
-      mutateAsync({
+      mutate({
         id: process.id,
       })
     );
