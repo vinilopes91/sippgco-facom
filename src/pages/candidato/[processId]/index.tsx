@@ -13,10 +13,6 @@ const Processo: NextPage = () => {
   const { data: userSession } = useSession();
   const ctx = api.useContext();
 
-  if (!router.query.processId) {
-    return <div>404</div>;
-  }
-
   const { data: processData, isLoading: isLoadingProcess } =
     api.process.get.useQuery(
       {
@@ -34,7 +30,7 @@ const Processo: NextPage = () => {
         processId: router.query.processId as string,
       },
       {
-        enabled: !!router.query.processId,
+        enabled: !!router.query.processId && !!userSession?.user.id,
       }
     );
 
@@ -58,6 +54,10 @@ const Processo: NextPage = () => {
         }
       },
     });
+
+  if (!router.query.processId) {
+    return <div>404</div>;
+  }
 
   if (isLoadingProcess) {
     return <div>Loading...</div>;

@@ -14,12 +14,7 @@ import ProcessStatusBadge from "@/components/ProcessStatusBadge";
 
 const ProcessDetail: NextPage = () => {
   const router = useRouter();
-
   const ctx = api.useContext();
-
-  if (!router.query.processId) {
-    return <div>404</div>;
-  }
 
   const { data: processData, isLoading: isLoadingProcess } =
     api.process.get.useQuery({
@@ -66,6 +61,10 @@ const ProcessDetail: NextPage = () => {
         }
       },
     });
+
+  if (!router.query.processId) {
+    return <div>404</div>;
+  }
 
   if (isLoadingProcess) {
     return <div>Loading...</div>;
