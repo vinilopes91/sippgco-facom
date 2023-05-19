@@ -13,14 +13,9 @@ const CandidatoHome: NextPage = () => {
   const { data: userSession } = useSession();
 
   const { data: userApplications, isLoading: isLoadingUserApplications } =
-    api.application.listUserApplications.useQuery(
-      {
-        userId: userSession?.user.id as string,
-      },
-      {
-        enabled: !!userSession?.user.id,
-      }
-    );
+    api.application.listUserApplications.useQuery(undefined, {
+      enabled: !!userSession?.user.id,
+    });
 
   return (
     <Base>

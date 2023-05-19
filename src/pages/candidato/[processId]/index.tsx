@@ -5,12 +5,10 @@ import { api } from "@/utils/api";
 import ProcessStatusBadge from "@/components/ProcessStatusBadge";
 import clsx from "clsx";
 import { toast } from "react-hot-toast";
-import { useSession } from "next-auth/react";
 import { isBefore } from "date-fns";
 
 const Processo: NextPage = () => {
   const router = useRouter();
-  const { data: userSession } = useSession();
   const ctx = api.useContext();
 
   const { data: processData, isLoading: isLoadingProcess } =
@@ -26,11 +24,10 @@ const Processo: NextPage = () => {
   const { data: userApplications } =
     api.application.listUserApplications.useQuery(
       {
-        userId: userSession?.user.id as string,
         processId: router.query.processId as string,
       },
       {
-        enabled: !!router.query.processId && !!userSession?.user.id,
+        enabled: !!router.query.processId,
       }
     );
 
@@ -91,7 +88,6 @@ const Processo: NextPage = () => {
               onClick={() =>
                 applyProcess({
                   processId: processData.id,
-                  userId: userSession?.user.id as string,
                 })
               }
             >

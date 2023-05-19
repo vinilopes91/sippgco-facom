@@ -5,6 +5,7 @@ import { processRouter } from "@/server/api/routers/process";
 import { researchLineRouter } from "@/server/api/routers/researchLine";
 import { documentRouter } from "@/server/api/routers/document";
 import { applicationRouter } from "@/server/api/routers/application";
+import { processDocumentsRouter } from "@/server/api/routers/processDocuments";
 
 /**
  * This is the primary router for your server.
@@ -18,6 +19,7 @@ export const appRouter = createTRPCRouter({
   researchLine: researchLineRouter,
   document: documentRouter,
   application: applicationRouter,
+  processDocuments: processDocumentsRouter,
 });
 
 // export type definition of API
