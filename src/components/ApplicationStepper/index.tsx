@@ -28,9 +28,9 @@ const ApplicationStepper = (props: ApplicationStepperProps) => {
           className="text-slate-900 no-underline hover:underline"
           href={`/candidato/inscricao/${
             router.query.applicationId as string
-          }/dados-academicos`}
+          }/dados-inscricao`}
         >
-          Dados acadêmicos
+          Dados da inscrição
         </Link>
       </li>
       <li className={clsx("step", currentStep === 3 && "step-primary")}>
@@ -38,9 +38,9 @@ const ApplicationStepper = (props: ApplicationStepperProps) => {
           className="text-slate-900 no-underline hover:underline"
           href={`/candidato/inscricao/${
             router.query.applicationId as string
-          }/dados-inscricao`}
+          }/dados-academicos`}
         >
-          Dados da inscrição
+          Dados acadêmicos
         </Link>
       </li>
       <li className={clsx("step", currentStep === 4 && "step-primary")}>

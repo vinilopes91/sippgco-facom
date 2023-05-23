@@ -43,7 +43,15 @@ export const applicationRouter = createTRPCRouter({
           createdAt: "desc",
         },
         include: {
-          process: true,
+          process: {
+            include: {
+              ProcessResearchLine: {
+                include: {
+                  researchLine: true,
+                },
+              },
+            },
+          },
           PersonalDataApplication: true,
           RegistrationDataApplication: true,
           AcademicDataApplication: true,

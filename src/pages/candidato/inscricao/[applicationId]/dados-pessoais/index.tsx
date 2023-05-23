@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { type NextPage } from "next";
 import { useRouter } from "next/router";
 
@@ -16,17 +17,19 @@ import FileInput from "@/components/FileInput";
 
 const PersonalData: NextPage = () => {
   const router = useRouter();
-  const { data: userSession } = useSession();
+  const { data: userSession, status: sessionStatus } = useSession();
 
-  const { register, handleSubmit, formState } =
+  const { register, handleSubmit, formState, setValue } =
     useForm<CreatePersonalDataApplication>({
       resolver: zodResolver(createPersonalDataApplication),
-      defaultValues: {
-        name: userSession?.user.name as string,
-        email: userSession?.user.email as string,
-        phone: "",
-      },
     });
+
+  useEffect(() => {
+    if (userSession && userSession.user.name && userSession.user.email) {
+      setValue("name", userSession.user.name);
+      setValue("email", userSession.user.email);
+    }
+  }, [setValue, userSession]);
 
   const { errors } = formState;
 
@@ -49,7 +52,7 @@ const PersonalData: NextPage = () => {
       step: "PERSONAL_DATA",
     },
     {
-      enabled: !!router.query.applicationId,
+      enabled: !!applicationData?.process.id,
     }
   );
 
@@ -57,7 +60,7 @@ const PersonalData: NextPage = () => {
     return <div>404</div>;
   }
 
-  if (isLoadingApplicationData) {
+  if (isLoadingApplicationData || sessionStatus === "loading") {
     return <div>Loading...</div>;
   }
 
@@ -66,7 +69,7 @@ const PersonalData: NextPage = () => {
   }
 
   const onSubmit = (data: CreatePersonalDataApplication) => {
-    console.log(data);
+    console.log("Submit..", data);
     // return mutate(data);
   };
 

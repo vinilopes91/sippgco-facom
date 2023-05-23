@@ -4,9 +4,20 @@ import { useRouter } from "next/router";
 import { api } from "@/utils/api";
 import Base from "@/layout/Base";
 import ApplicationStepper from "@/components/ApplicationStepper";
+import { useSession } from "next-auth/react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-const PersonalData: NextPage = () => {
+const AcademicData: NextPage = () => {
   const router = useRouter();
+  const { data: userSession, status: sessionStatus } = useSession();
+
+  // const { register, handleSubmit, formState } =
+  //   useForm<>({
+  //     resolver: zodResolver(),
+  //   });
+
+  // const { errors } = formState;
 
   const { data: applicationData, isLoading: isLoadingApplicationData } =
     api.application.getUserApplication.useQuery(
@@ -18,17 +29,35 @@ const PersonalData: NextPage = () => {
       }
     );
 
+  const {
+    data: academicDataDocuments,
+    isLoading: isLoadingAcademicDataDocuments,
+  } = api.processDocuments.listProcessDocuments.useQuery(
+    {
+      processId: applicationData?.process.id as string,
+      step: "ACADEMIC_DATA",
+    },
+    {
+      enabled: !!applicationData?.process.id,
+    }
+  );
+
   if (!router.query.applicationId) {
     return <div>404</div>;
   }
 
-  if (isLoadingApplicationData) {
+  if (isLoadingApplicationData || sessionStatus === "loading") {
     return <div>Loading...</div>;
   }
 
   if (!applicationData) {
     return <div>404</div>;
   }
+
+  // const onSubmit = (data: CreatePersonalDataApplication) => {
+  //   console.log("Submit..", data);
+  //   // return mutate(data);
+  // };
 
   return (
     <Base pageTitle="Minhas candidaturas" backBtn>
@@ -37,12 +66,59 @@ const PersonalData: NextPage = () => {
           <h2 className="text-2xl font-bold">{applicationData.process.name}</h2>
         </div>
         <div className="my-4 flex justify-center">
-          <ApplicationStepper currentStep={2} />
+          <ApplicationStepper currentStep={3} />
         </div>
-        <div className="flex"></div>
+        {/* <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+          <div className="mt-6 flex flex-col">
+            <h3 className="text-lg font-medium">Dados pessoais</h3>
+            <div className="grid grid-cols-3 gap-2">
+              <Input
+                label="Nome completo"
+                name="name"
+                register={register}
+                error={errors.name}
+                disabled
+              />
+              <Input
+                label="E-mail"
+                name="email"
+                register={register}
+                error={errors.email}
+                disabled
+              />
+              <Input
+                label="Telefone"
+                name="phone"
+                register={register}
+                error={errors.phone}
+              />
+            </div>
+          </div>
+
+          {isLoadingPersonalDataDocuments && (
+            <div className="mt-4 flex animate-pulse flex-col">
+              <h3 className="h-6 w-48 rounded bg-slate-200 text-lg font-medium"></h3>
+              <div className="mt-2 grid grid-cols-3 gap-2">
+                <div className="h-[30px] w-full rounded bg-slate-200"></div>
+                <div className="h-[30px] w-full rounded bg-slate-200"></div>
+                <div className="h-[30px] w-full rounded bg-slate-200"></div>
+              </div>
+            </div>
+          )}
+          {personalDataDocuments && personalDataDocuments.length > 0 && (
+            <div className="mt-4 flex flex-col">
+              <h3 className="text-lg font-medium">Documentos</h3>
+              <div className="grid grid-cols-3 gap-2">
+                {personalDataDocuments.map(({ document, documentId }) => (
+                  <FileInput key={documentId} label={document.name} />
+                ))}
+              </div>
+            </div>
+          )}
+        </form> */}
       </div>
     </Base>
   );
 };
 
-export default PersonalData;
+export default AcademicData;
