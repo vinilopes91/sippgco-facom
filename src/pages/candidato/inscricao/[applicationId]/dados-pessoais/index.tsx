@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { type NextPage } from "next";
 import { useRouter } from "next/router";
 
@@ -14,8 +14,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useSession } from "next-auth/react";
 import Input from "@/components/Input";
 import FileInput from "@/components/FileInput";
+import { TrashIcon } from "@heroicons/react/24/outline";
 
 const PersonalData: NextPage = () => {
+  const [documentsFiles, setDocumentsFiles] =
+    useState<{ documentId: string; file: File }[]>();
   const router = useRouter();
   const { data: userSession, status: sessionStatus } = useSession();
 
@@ -67,6 +70,33 @@ const PersonalData: NextPage = () => {
   if (!applicationData) {
     return <div>404</div>;
   }
+
+  const onFileChange =
+    (documentId: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files?.length === 0) return;
+      setDocumentsFiles((prevState) => {
+        if (prevState?.length) {
+          const document = prevState.find(
+            (_doc) => _doc.documentId === documentId
+          );
+          if (!document) {
+            return [
+              ...prevState,
+              { documentId, file: e.target.files?.[0] as File },
+            ];
+          }
+          return prevState.map((_doc) => {
+            if (_doc.documentId === documentId) {
+              return { documentId, file: e.target.files?.[0] as File };
+            }
+            return _doc;
+          });
+        } else {
+          console.log(e.target.files?.[0]);
+          return [{ documentId, file: e.target.files?.[0] as File }];
+        }
+      });
+    };
 
   const onSubmit = (data: CreatePersonalDataApplication) => {
     console.log("Submit..", data);
@@ -125,9 +155,41 @@ const PersonalData: NextPage = () => {
             <div className="mt-4 flex flex-col">
               <h3 className="text-lg font-medium">Documentos</h3>
               <div className="grid grid-cols-3 gap-2">
-                {personalDataDocuments.map(({ document, documentId }) => (
-                  <FileInput key={documentId} label={document.name} />
-                ))}
+                {personalDataDocuments.map(({ document, documentId }) => {
+                  // TODO: Adicionar função para download de arquivo
+                  const userDocument =
+                    applicationData.UserDocumentApplication.find(
+                      (userDocument) => userDocument.documentId === documentId
+                    );
+
+                  const isUploaded = !!userDocument?.id;
+
+                  return (
+                    <div className="flex flex-col gap-2" key={documentId}>
+                      <FileInput
+                        label={document.name}
+                        accept="application/pdf"
+                        disabled={isUploaded}
+                        onChange={onFileChange(documentId)}
+                      />
+                      {isUploaded && (
+                        <div className="flex w-full items-center gap-4">
+                          <span className="link">{`${document.name}.pdf`}</span>
+                          <button
+                            type="button"
+                            className="btn-ghost btn h-auto min-h-0 p-0"
+                          >
+                            <TrashIcon
+                              title="remover"
+                              width={20}
+                              stroke="red"
+                            />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}

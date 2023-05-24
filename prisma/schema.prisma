@@ -130,7 +130,7 @@ model UserDocumentApplication {
     userId             String
     documentId         String
     applicationId      String
-    url                String
+    key                String
     step               String
     status             AnalysisStatus?
     reasonForRejection String?

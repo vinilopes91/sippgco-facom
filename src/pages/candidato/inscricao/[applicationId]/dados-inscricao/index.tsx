@@ -79,7 +79,7 @@ const RegistrationData: NextPage = () => {
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           <div className="mt-6 flex flex-col">
-            <h3 className="text-lg font-medium">Dados pessoais</h3>
+            <h3 className="text-lg font-medium">Dados inscrição</h3>
             <div className="grid grid-cols-3 gap-2">
               <Select
                 name="vacancyType"

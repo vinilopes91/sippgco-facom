@@ -21,6 +21,7 @@
     "@trpc/next": "^10.18.0",
     "@trpc/react-query": "^10.18.0",
     "@trpc/server": "^10.18.0",
+    "aws-sdk": "^2.1383.0",
     "bcrypt": "^5.1.0",
     "clsx": "^1.2.1",
     "daisyui": "^2.51.6",
