@@ -54,8 +54,8 @@ const Input = <T extends FieldValues>(props: InputProps<T>) => {
           [styleVariants.error]: error?.message,
         })}
         id={props.name}
-        {...inputProps}
         {...register(props.name, registerOptions)}
+        {...inputProps}
       />
       {error && (
         <div className="mt-1 flex items-center gap-1">

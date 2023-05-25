@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { type NextPage } from "next";
 import { useRouter } from "next/router";
-
 import { api } from "@/utils/api";
 import Base from "@/layout/Base";
 import ApplicationStepper from "@/components/ApplicationStepper";
@@ -13,12 +12,12 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSession } from "next-auth/react";
 import Input from "@/components/Input";
-import FileInput from "@/components/FileInput";
-import { TrashIcon } from "@heroicons/react/24/outline";
+import StepFileInput from "@/components/StepFileInput/StepFileInput";
+import { toast } from "react-hot-toast";
+import { NumberFormatBase } from "react-number-format";
+import { maskPhoneNumber } from "@/utils/mask";
 
 const PersonalData: NextPage = () => {
-  const [documentsFiles, setDocumentsFiles] =
-    useState<{ documentId: string; file: File }[]>();
   const router = useRouter();
   const { data: userSession, status: sessionStatus } = useSession();
 
@@ -59,47 +58,44 @@ const PersonalData: NextPage = () => {
     }
   );
 
+  // TODO Criar mutation para enviar os dados pessoais
+
   if (!router.query.applicationId) {
     return <div>404</div>;
   }
 
-  if (isLoadingApplicationData || sessionStatus === "loading") {
+  if (
+    isLoadingApplicationData ||
+    sessionStatus === "loading" ||
+    !personalDataDocuments
+  ) {
     return <div>Loading...</div>;
   }
 
   if (!applicationData) {
-    return <div>404</div>;
+    return <div>Inscrição não encontrada.</div>;
   }
 
-  const onFileChange =
-    (documentId: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (e.target.files?.length === 0) return;
-      setDocumentsFiles((prevState) => {
-        if (prevState?.length) {
-          const document = prevState.find(
-            (_doc) => _doc.documentId === documentId
-          );
-          if (!document) {
-            return [
-              ...prevState,
-              { documentId, file: e.target.files?.[0] as File },
-            ];
-          }
-          return prevState.map((_doc) => {
-            if (_doc.documentId === documentId) {
-              return { documentId, file: e.target.files?.[0] as File };
-            }
-            return _doc;
-          });
-        } else {
-          console.log(e.target.files?.[0]);
-          return [{ documentId, file: e.target.files?.[0] as File }];
-        }
-      });
-    };
+  const requiredDocuments = personalDataDocuments?.filter(
+    (processDocument) => processDocument.document.required
+  );
 
   const onSubmit = (data: CreatePersonalDataApplication) => {
+    const disableSubmit = requiredDocuments.some((processDocument) => {
+      const document = applicationData.UserDocumentApplication.find(
+        (userDocument) => userDocument.documentId === processDocument.documentId
+      );
+
+      return !document;
+    });
+
+    if (disableSubmit) {
+      toast.error("Você precisa enviar todos os documentos obrigatórios");
+      return;
+    }
+
     console.log("Submit..", data);
+
     // return mutate(data);
   };
 
@@ -131,12 +127,19 @@ const PersonalData: NextPage = () => {
                 error={errors.email}
                 disabled
               />
-              {/* TODO: Adicionar máscara de telefone */}
-              <Input
-                label="Telefone"
+              <NumberFormatBase
+                format={maskPhoneNumber}
+                id="phone"
                 name="phone"
-                register={register}
+                minLength={14}
+                maxLength={16}
+                label="Telefone"
                 error={errors.phone}
+                register={register}
+                customInput={Input<CreatePersonalDataApplication>}
+                onValueChange={(values) => {
+                  setValue("phone", values.value);
+                }}
               />
             </div>
           </div>
@@ -156,43 +159,21 @@ const PersonalData: NextPage = () => {
               <h3 className="text-lg font-medium">Documentos</h3>
               <div className="grid grid-cols-3 gap-2">
                 {personalDataDocuments.map(({ document, documentId }) => {
-                  // TODO: Adicionar função para download de arquivo
-                  const userDocument =
-                    applicationData.UserDocumentApplication.find(
-                      (userDocument) => userDocument.documentId === documentId
-                    );
-
-                  const isUploaded = !!userDocument?.id;
-
                   return (
-                    <div className="flex flex-col gap-2" key={documentId}>
-                      <FileInput
-                        label={document.name}
-                        accept="application/pdf"
-                        disabled={isUploaded}
-                        onChange={onFileChange(documentId)}
-                      />
-                      {isUploaded && (
-                        <div className="flex w-full items-center gap-4">
-                          <span className="link">{`${document.name}.pdf`}</span>
-                          <button
-                            type="button"
-                            className="btn-ghost btn h-auto min-h-0 p-0"
-                          >
-                            <TrashIcon
-                              title="remover"
-                              width={20}
-                              stroke="red"
-                            />
-                          </button>
-                        </div>
-                      )}
-                    </div>
+                    <StepFileInput
+                      key={documentId}
+                      applicationData={applicationData}
+                      document={document}
+                      documentId={documentId}
+                    />
                   );
                 })}
               </div>
             </div>
           )}
+          <button className="btn-primary btn" type="submit">
+            Avançar
+          </button>
         </form>
       </div>
     </Base>

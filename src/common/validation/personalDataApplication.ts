@@ -6,7 +6,7 @@ export const createPersonalDataApplication = z.object({
   phone: z
     .string()
     .min(10, "Campo obrigatório")
-    .max(11, "Máximo 11 caracteres"),
+    .max(11, "Máximo 12 caracteres"),
 });
 
 export type CreatePersonalDataApplication = z.infer<

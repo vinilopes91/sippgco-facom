@@ -16,3 +16,13 @@ export const createUserDocumentApplication = z.object({
 export type CreateUserDocumentApplication = z.infer<
   typeof createUserDocumentApplication
 >;
+
+export const updateUserDocumentApplication = createUserDocumentApplication
+  .partial()
+  .extend({
+    id: z.string().cuid(),
+  });
+
+export type UpdateUserDocumentApplication = z.infer<
+  typeof updateUserDocumentApplication
+>;

@@ -1,3 +1,4 @@
+import React, { forwardRef } from "react";
 import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
 import clsx from "clsx";
 import tailwindColors from "tailwindcss/colors";
@@ -7,7 +8,10 @@ type FileInputProps = Omit<React.ComponentPropsWithoutRef<"input">, "type"> & {
   errorMessage?: string;
 };
 
-const FileInput = (props: FileInputProps) => {
+const FileInput = (
+  props: FileInputProps,
+  ref: React.ForwardedRef<HTMLInputElement>
+) => {
   const { label, errorMessage, ...inputProps } = props;
 
   const styleVariants = {
@@ -19,17 +23,20 @@ const FileInput = (props: FileInputProps) => {
       <label className="label" htmlFor={props.name}>
         <span className="label-text font-medium">{label}</span>
       </label>
-      <input
-        className={clsx(
-          "file-input-bordered file-input-primary file-input w-full",
-          {
-            [styleVariants.error]: errorMessage,
-          }
-        )}
-        id={props.name}
-        type="file"
-        {...inputProps}
-      />
+      <div className="flex items-center justify-between">
+        <input
+          className={clsx(
+            "file-input-bordered file-input-primary file-input w-full",
+            {
+              [styleVariants.error]: errorMessage,
+            }
+          )}
+          id={props.name}
+          type="file"
+          ref={ref}
+          {...inputProps}
+        />
+      </div>
       {errorMessage && (
         <div className="mt-1 flex items-center gap-1">
           <ExclamationCircleIcon color={tailwindColors.red[500]} width={20} />
@@ -40,4 +47,4 @@ const FileInput = (props: FileInputProps) => {
   );
 };
 
-export default FileInput;
+export default forwardRef(FileInput);

@@ -1,6 +1,9 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { s3 } from "@/server/utils/s3";
-import { createUserDocumentApplication } from "@/common/validation/userDocumentApplication";
+import {
+  createUserDocumentApplication,
+  updateUserDocumentApplication,
+} from "@/common/validation/userDocumentApplication";
 import { randomUUID } from "crypto";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
@@ -23,6 +26,8 @@ export const userDocumentRouter = createTRPCRouter({
 
     const uploadUrl = s3.getSignedUrl("putObject", s3Params);
 
+    console.log(uploadUrl, key);
+
     return {
       uploadUrl,
       key,
@@ -33,6 +38,25 @@ export const userDocumentRouter = createTRPCRouter({
     .mutation(async ({ input, ctx }) => {
       const userDocumentApplication =
         await ctx.prisma.userDocumentApplication.create({
+          data: {
+            key: input.key,
+            userId: ctx.session.user.id,
+            applicationId: input.applicationId,
+            step: input.step,
+            documentId: input.documentId,
+          },
+        });
+
+      return userDocumentApplication;
+    }),
+  update: protectedProcedure
+    .input(updateUserDocumentApplication)
+    .mutation(async ({ input, ctx }) => {
+      const userDocumentApplication =
+        await ctx.prisma.userDocumentApplication.update({
+          where: {
+            id: input.id,
+          },
           data: {
             key: input.key,
             userId: ctx.session.user.id,
