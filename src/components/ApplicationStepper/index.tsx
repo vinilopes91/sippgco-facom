@@ -13,9 +13,14 @@ const ApplicationStepper = (props: ApplicationStepperProps) => {
 
   return (
     <ul className="steps w-[40rem]">
-      <li className={clsx("step", currentStep === 1 && "step-primary")}>
+      <li
+        className={clsx(
+          "step font-medium",
+          currentStep === 1 && "step-primary"
+        )}
+      >
         <Link
-          className="text-slate-900 no-underline hover:underline"
+          className="font-medium text-slate-900 no-underline hover:underline"
           href={`/candidato/inscricao/${
             router.query.applicationId as string
           }/dados-pessoais`}
@@ -23,9 +28,14 @@ const ApplicationStepper = (props: ApplicationStepperProps) => {
           Dados pessoais
         </Link>
       </li>
-      <li className={clsx("step", currentStep === 2 && "step-primary")}>
+      <li
+        className={clsx(
+          "step font-medium",
+          currentStep === 2 && "step-primary"
+        )}
+      >
         <Link
-          className="text-slate-900 no-underline hover:underline"
+          className="font-medium text-slate-900 no-underline hover:underline"
           href={`/candidato/inscricao/${
             router.query.applicationId as string
           }/dados-inscricao`}
@@ -33,9 +43,14 @@ const ApplicationStepper = (props: ApplicationStepperProps) => {
           Dados da inscrição
         </Link>
       </li>
-      <li className={clsx("step", currentStep === 3 && "step-primary")}>
+      <li
+        className={clsx(
+          "step font-medium",
+          currentStep === 3 && "step-primary"
+        )}
+      >
         <Link
-          className="text-slate-900 no-underline hover:underline"
+          className="font-medium text-slate-900 no-underline hover:underline"
           href={`/candidato/inscricao/${
             router.query.applicationId as string
           }/dados-academicos`}
@@ -43,9 +58,14 @@ const ApplicationStepper = (props: ApplicationStepperProps) => {
           Dados acadêmicos
         </Link>
       </li>
-      <li className={clsx("step", currentStep === 4 && "step-primary")}>
+      <li
+        className={clsx(
+          "step font-medium",
+          currentStep === 4 && "step-primary"
+        )}
+      >
         <Link
-          className="text-slate-900 no-underline hover:underline"
+          className="font-medium text-slate-900 no-underline hover:underline"
           href={`/candidato/inscricao/${
             router.query.applicationId as string
           }/curriculo`}

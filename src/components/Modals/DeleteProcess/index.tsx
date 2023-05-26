@@ -1,5 +1,6 @@
 import BaseModal, { type BaseModalProps } from "@/components/Modals/BaseModal";
 import { api } from "@/utils/api";
+import { handleTRPCError } from "@/utils/errors";
 import { XCircleIcon } from "@heroicons/react/24/outline";
 import { type Process } from "@prisma/client";
 import clsx from "clsx";
@@ -21,12 +22,10 @@ const DeleteProcessModal = (
       handleCloseModal();
     },
     onError: (e) => {
-      const errorMessage = e.data?.zodError?.fieldErrors.content;
-      if (errorMessage && errorMessage[0]) {
-        toast.error(errorMessage[0]);
-      } else {
-        toast.error("Falha ao deletar processo! Tente novamente mais tarde.");
-      }
+      handleTRPCError(
+        e,
+        "Falha ao deletar processo! Tente novamente mais tarde."
+      );
     },
   });
 

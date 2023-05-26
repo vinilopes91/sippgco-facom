@@ -38,11 +38,11 @@ const AcademicData: NextPage = () => {
     isLoading: isLoadingAcademicDataDocuments,
   } = api.processDocuments.listProcessDocuments.useQuery(
     {
-      processId: applicationData?.process.id as string,
+      processId: applicationData?.processId as string,
       step: "ACADEMIC_DATA",
     },
     {
-      enabled: !!applicationData?.process.id,
+      enabled: !!applicationData?.processId,
     }
   );
 

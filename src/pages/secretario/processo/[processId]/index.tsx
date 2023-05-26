@@ -11,6 +11,7 @@ import {
 import { toast } from "react-hot-toast";
 import clsx from "clsx";
 import ProcessStatusBadge from "@/components/ProcessStatusBadge";
+import { handleTRPCError } from "@/utils/errors";
 
 const ProcessDetail: NextPage = () => {
   const router = useRouter();
@@ -31,12 +32,10 @@ const ProcessDetail: NextPage = () => {
         toast.success("Processo ativado com sucesso!");
       },
       onError: (e) => {
-        const errorMessage = e.data?.zodError?.fieldErrors.content;
-        if (errorMessage && errorMessage[0]) {
-          toast.error(errorMessage[0]);
-        } else {
-          toast.error("Falha ao ativar processo! Tente novamente mais tarde.");
-        }
+        handleTRPCError(
+          e,
+          "Falha ao ativar processo! Tente novamente mais tarde"
+        );
       },
     });
 
@@ -51,14 +50,10 @@ const ProcessDetail: NextPage = () => {
         router.back();
       },
       onError: (e) => {
-        const errorMessage = e.data?.zodError?.fieldErrors.content;
-        if (errorMessage && errorMessage[0]) {
-          toast.error(errorMessage[0]);
-        } else {
-          toast.error(
-            "Falha ao finalizar processo! Tente novamente mais tarde."
-          );
-        }
+        handleTRPCError(
+          e,
+          "Falha ao finalizar processo! Tente novamente mais tarde."
+        );
       },
     });
 

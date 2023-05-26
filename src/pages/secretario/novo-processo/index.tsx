@@ -19,6 +19,7 @@ import CreateProcessDocumentModal from "@/components/Modals/CreateProcessDocumen
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/router";
 import clsx from "clsx";
+import { handleTRPCError } from "@/utils/errors";
 
 const NewProcess: NextPage = () => {
   const [researchLinesSelected, setResearchLinesSelected] = useState<string[]>(
@@ -53,12 +54,10 @@ const NewProcess: NextPage = () => {
       router.back();
     },
     onError: (e) => {
-      const errorMessage = e.data?.zodError?.fieldErrors.content;
-      if (errorMessage && errorMessage[0]) {
-        toast.error(errorMessage[0]);
-      } else {
-        toast.error("Falha ao criar documento! Tente novamente mais tarde.");
-      }
+      handleTRPCError(
+        e,
+        "Falha ao criar documento! Tente novamente mais tarde."
+      );
     },
   });
 

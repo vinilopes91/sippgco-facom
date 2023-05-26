@@ -6,6 +6,7 @@ import ProcessStatusBadge from "@/components/ProcessStatusBadge";
 import clsx from "clsx";
 import { toast } from "react-hot-toast";
 import { isBefore } from "date-fns";
+import { handleTRPCError } from "@/utils/errors";
 
 const Processo: NextPage = () => {
   const router = useRouter();
@@ -39,16 +40,10 @@ const Processo: NextPage = () => {
         void router.push(`/candidato/inscricao/${applicationCreated.id}`);
       },
       onError: (e) => {
-        if (e.message) {
-          toast.error(e.message);
-          return;
-        }
-        const errorMessage = e.data?.zodError?.fieldErrors.content;
-        if (errorMessage && errorMessage[0]) {
-          toast.error(errorMessage[0]);
-        } else {
-          toast.error("Falha ao fazer inscrição! Tente novamente mais tarde.");
-        }
+        handleTRPCError(
+          e,
+          "Falha ao fazer inscrição! Tente novamente mais tarde."
+        );
       },
     });
 

@@ -6,6 +6,7 @@ import FileInput from "../FileInput";
 import clsx from "clsx";
 import { useRef, useState } from "react";
 import { toast } from "react-hot-toast";
+import { handleTRPCError } from "@/utils/errors";
 
 const StepFileInput = ({
   document,
@@ -78,22 +79,26 @@ const StepFileInput = ({
       return;
     }
 
-    if (isUploaded) {
-      await updateUserDocumentApplication({
-        id: userDocument.id,
-        key,
-      });
-      await ctx.application.invalidate();
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    } else {
-      await createUserDocumentApplication({
-        step: document.step,
-        applicationId: applicationData.id,
-        documentId,
-        key,
-      });
-      await ctx.application.invalidate();
-      if (fileInputRef.current) fileInputRef.current.value = "";
+    try {
+      if (isUploaded) {
+        await updateUserDocumentApplication({
+          id: userDocument.id,
+          key,
+        });
+        await ctx.application.invalidate();
+        if (fileInputRef.current) fileInputRef.current.value = "";
+      } else {
+        await createUserDocumentApplication({
+          step: document.step,
+          applicationId: applicationData.id,
+          documentId,
+          key,
+        });
+        await ctx.application.invalidate();
+        if (fileInputRef.current) fileInputRef.current.value = "";
+      }
+    } catch (error) {
+      handleTRPCError(error);
     }
     setIsUploading(false);
   };

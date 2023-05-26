@@ -14,6 +14,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { modalityMapper, stepMapper, vacancyTypeMapper } from "@/utils/mapper";
 import { Modality, Step, VacancyType } from "@prisma/client";
+import { handleTRPCError } from "@/utils/errors";
 
 const CreateProcessDocumentModal = (
   props: Omit<BaseModalProps, "children" | "disableClickOutside">
@@ -39,12 +40,10 @@ const CreateProcessDocumentModal = (
       handleCloseModal();
     },
     onError: (e) => {
-      const errorMessage = e.data?.zodError?.fieldErrors.content;
-      if (errorMessage && errorMessage[0]) {
-        toast.error(errorMessage[0]);
-      } else {
-        toast.error("Falha ao criar documento! Tente novamente mais tarde.");
-      }
+      handleTRPCError(
+        e,
+        "Falha ao criar documento! Tente novamente mais tarde."
+      );
     },
   });
 

@@ -6,6 +6,7 @@ import ControlledInput from "@/components/ControlledInput";
 import Input from "@/components/Input";
 import BaseModal, { type BaseModalProps } from "@/components/Modals/BaseModal";
 import { api } from "@/utils/api";
+import { handleTRPCError } from "@/utils/errors";
 import { PlusIcon, XCircleIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { zodResolver } from "@hookform/resolvers/zod";
 import clsx from "clsx";
@@ -80,14 +81,10 @@ const CreateResearchLineModal = (
       handleCloseModal();
     },
     onError: (e) => {
-      const errorMessage = e.data?.zodError?.fieldErrors.content;
-      if (errorMessage && errorMessage[0]) {
-        toast.error(errorMessage[0]);
-      } else {
-        toast.error(
-          "Falha ao criar linha de pesquisa! Tente novamente mais tarde."
-        );
-      }
+      handleTRPCError(
+        e,
+        "Falha ao criar linha de pesquisa! Tente novamente mais tarde."
+      );
     },
   });
 

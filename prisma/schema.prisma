@@ -34,14 +34,6 @@ model User {
     updatedAt                   DateTime                      @updatedAt
 }
 
-model VerificationToken {
-    identifier String
-    token      String   @unique
-    expires    DateTime
-
-    @@unique([identifier, token])
-}
-
 enum Step {
     PERSONAL_DATA
     REGISTRATION_DATA
@@ -102,19 +94,19 @@ model Process {
 }
 
 model Application {
-    id                          String                        @id @default(cuid())
-    userId                      String
-    processId                   String
+    id                          String                       @id @default(cuid())
+    userId                      String                       @unique
+    processId                   String                       @unique
     status                      AnalysisStatus?
     reasonForRejection          String?
-    user                        User                          @relation(fields: [userId], references: [id], onDelete: Cascade)
-    process                     Process                       @relation(fields: [processId], references: [id], onDelete: Cascade)
-    PersonalDataApplication     PersonalDataApplication[]
-    RegistrationDataApplication RegistrationDataApplication[]
-    AcademicDataApplication     AcademicDataApplication[]
+    user                        User                         @relation(fields: [userId], references: [id], onDelete: Cascade)
+    process                     Process                      @relation(fields: [processId], references: [id], onDelete: Cascade)
+    personalDataApplication     PersonalDataApplication?
+    registrationDataApplication RegistrationDataApplication?
+    academicDataApplication     AcademicDataApplication?
     UserDocumentApplication     UserDocumentApplication[]
-    createdAt                   DateTime                      @default(now())
-    updatedAt                   DateTime                      @updatedAt
+    createdAt                   DateTime                     @default(now())
+    updatedAt                   DateTime                     @updatedAt
 
     @@index([userId])
     @@index([processId])
@@ -196,8 +188,8 @@ model ProcessResearchLine {
 
 model PersonalDataApplication {
     id            String      @id @default(cuid())
-    userId        String
-    applicationId String
+    userId        String      @unique
+    applicationId String      @unique
     phone         String
     user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
     application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
@@ -210,9 +202,9 @@ model PersonalDataApplication {
 
 model RegistrationDataApplication {
     id             String       @id @default(cuid())
-    userId         String
-    applicationId  String
-    researchLineId String
+    userId         String       @unique
+    applicationId  String       @unique
+    researchLineId String       @unique
     specialStudent Boolean
     scholarship    Boolean
     modality       Modality
@@ -230,8 +222,8 @@ model RegistrationDataApplication {
 
 model AcademicDataApplication {
     id                       String      @id @default(cuid())
-    userId                   String
-    applicationId            String
+    userId                   String      @unique
+    applicationId            String      @unique
     courseArea               String
     completionOrForecastYear String
     institution              String

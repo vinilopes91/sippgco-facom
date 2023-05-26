@@ -13,6 +13,7 @@ import LogoFacom from "public/images/logo-facom.png";
 import Input from "@/components/Input";
 import Container from "@/components/Container";
 import { useState } from "react";
+import clsx from "clsx";
 
 const Home: NextPage = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -91,7 +92,7 @@ const Home: NextPage = () => {
               />
             </div>
             <button
-              className="btn-primary btn"
+              className={clsx("btn-primary btn", isLoading && "loading")}
               type="submit"
               disabled={isLoading}
             >

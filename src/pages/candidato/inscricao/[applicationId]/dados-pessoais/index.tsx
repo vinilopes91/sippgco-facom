@@ -6,8 +6,8 @@ import Base from "@/layout/Base";
 import ApplicationStepper from "@/components/ApplicationStepper";
 import { useForm } from "react-hook-form";
 import {
-  type CreatePersonalDataApplication,
-  createPersonalDataApplication,
+  type CreatePersonalDataApplicationSchema,
+  createPersonalDataApplicationSchema,
 } from "@/common/validation/personalDataApplication";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSession } from "next-auth/react";
@@ -16,14 +16,16 @@ import StepFileInput from "@/components/StepFileInput/StepFileInput";
 import { toast } from "react-hot-toast";
 import { NumberFormatBase } from "react-number-format";
 import { maskPhoneNumber } from "@/utils/mask";
+import clsx from "clsx";
+import { handleTRPCError } from "@/utils/errors";
 
 const PersonalData: NextPage = () => {
   const router = useRouter();
   const { data: userSession, status: sessionStatus } = useSession();
 
   const { register, handleSubmit, formState, setValue } =
-    useForm<CreatePersonalDataApplication>({
-      resolver: zodResolver(createPersonalDataApplication),
+    useForm<CreatePersonalDataApplicationSchema>({
+      resolver: zodResolver(createPersonalDataApplicationSchema),
     });
 
   useEffect(() => {
@@ -32,6 +34,15 @@ const PersonalData: NextPage = () => {
       setValue("email", userSession.user.email);
     }
   }, [setValue, userSession]);
+
+  useEffect(() => {
+    if (
+      router.query.applicationId &&
+      typeof router.query.applicationId === "string"
+    ) {
+      setValue("applicationId", router.query.applicationId);
+    }
+  }, [router.query.applicationId, setValue]);
 
   const { errors } = formState;
 
@@ -50,15 +61,26 @@ const PersonalData: NextPage = () => {
     isLoading: isLoadingPersonalDataDocuments,
   } = api.processDocuments.listProcessDocuments.useQuery(
     {
-      processId: applicationData?.process.id as string,
+      processId: applicationData?.processId as string,
       step: "PERSONAL_DATA",
     },
     {
-      enabled: !!applicationData?.process.id,
+      enabled: !!applicationData?.processId,
     }
   );
 
-  // TODO Criar mutation para enviar os dados pessoais
+  const {
+    mutateAsync: createPersonalDataApplication,
+    isLoading: creatingPersonalDataApplication,
+  } = api.personalDataApplication.create.useMutation();
+  const {
+    mutate: updatePersonalDataApplication,
+    isLoading: updatingPersonalDataApplication,
+  } = api.personalDataApplication.update.useMutation({
+    onError: (error) => {
+      handleTRPCError(error, "Erro ao salvar dados pessoais.");
+    },
+  });
 
   if (!router.query.applicationId) {
     return <div>404</div>;
@@ -76,11 +98,13 @@ const PersonalData: NextPage = () => {
     return <div>Inscrição não encontrada.</div>;
   }
 
+  const personalDataApplicationId = applicationData.personalDataApplication?.id;
+
   const requiredDocuments = personalDataDocuments?.filter(
     (processDocument) => processDocument.document.required
   );
 
-  const onSubmit = (data: CreatePersonalDataApplication) => {
+  const onSubmit = async (data: CreatePersonalDataApplicationSchema) => {
     const disableSubmit = requiredDocuments.some((processDocument) => {
       const document = applicationData.UserDocumentApplication.find(
         (userDocument) => userDocument.documentId === processDocument.documentId
@@ -94,9 +118,21 @@ const PersonalData: NextPage = () => {
       return;
     }
 
-    console.log("Submit..", data);
-
-    // return mutate(data);
+    if (personalDataApplicationId) {
+      updatePersonalDataApplication({
+        id: personalDataApplicationId,
+        ...data,
+      });
+    } else {
+      try {
+        await createPersonalDataApplication(data);
+        await router.push(
+          `/candidato/inscricao/${applicationData.id}/dados-inscricao`
+        );
+      } catch (error) {
+        handleTRPCError(error, "Erro ao registrar dados pessoais");
+      }
+    }
   };
 
   return (
@@ -134,9 +170,10 @@ const PersonalData: NextPage = () => {
                 minLength={14}
                 maxLength={16}
                 label="Telefone"
+                placeholder="(99) 9 9999-9999"
                 error={errors.phone}
                 register={register}
-                customInput={Input<CreatePersonalDataApplication>}
+                customInput={Input<CreatePersonalDataApplicationSchema>}
                 onValueChange={(values) => {
                   setValue("phone", values.value);
                 }}
@@ -171,9 +208,31 @@ const PersonalData: NextPage = () => {
               </div>
             </div>
           )}
-          <button className="btn-primary btn" type="submit">
-            Avançar
-          </button>
+          <div className="flex items-center justify-end">
+            {personalDataApplicationId ? (
+              <button
+                className={clsx(
+                  "btn-primary btn w-36",
+                  updatingPersonalDataApplication && "loading"
+                )}
+                disabled={updatingPersonalDataApplication}
+                type="submit"
+              >
+                Salvar
+              </button>
+            ) : (
+              <button
+                className={clsx(
+                  "btn-primary btn w-36",
+                  creatingPersonalDataApplication && "loading"
+                )}
+                disabled={creatingPersonalDataApplication}
+                type="submit"
+              >
+                Avançar
+              </button>
+            )}
+          </div>
         </form>
       </div>
     </Base>

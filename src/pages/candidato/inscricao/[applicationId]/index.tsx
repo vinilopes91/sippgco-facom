@@ -43,6 +43,26 @@ const Inscricao: NextPage = () => {
     [AnalysisStatus.REJECTED]: "Rejeitada",
   };
 
+  const handleClickViewApplication = () => {
+    const applicationId = router.query.applicationId as string;
+    if (!applicationData.personalDataApplication) {
+      return router.push(
+        `/candidato/inscricao/${applicationId}/dados-pessoais`
+      );
+    }
+    if (!applicationData.registrationDataApplication) {
+      return router.push(
+        `/candidato/inscricao/${applicationId}/dados-inscricao`
+      );
+    }
+    if (!applicationData.academicDataApplication) {
+      return router.push(
+        `/candidato/inscricao/${applicationId}/dados-academicos`
+      );
+    }
+    return router.push(`/candidato/inscricao/${applicationId}/curriculo`);
+  };
+
   return (
     <Base pageTitle="Minhas candidaturas" backBtn>
       <div className="mt-6 rounded-lg bg-white p-6 drop-shadow-sm">
@@ -61,7 +81,11 @@ const Inscricao: NextPage = () => {
                 : "Finalizado"}
             </span>
           </div>
-          <button type="button" className="btn-primary btn">
+          <button
+            type="button"
+            className="btn-primary btn"
+            onClick={handleClickViewApplication}
+          >
             Visualizar inscrição
           </button>
         </div>
@@ -69,33 +93,33 @@ const Inscricao: NextPage = () => {
           <div className="flex w-full items-center justify-between">
             <p className="font-medium">Dados pessoais</p>
             <span className="badge rounded-full px-2 py-1">
-              {applicationData.PersonalDataApplication.length === 0
-                ? "Pendente"
-                : "Finalizado"}
+              {applicationData.personalDataApplication?.id
+                ? "Preenchido"
+                : "Pendente"}
             </span>
           </div>
           <div className="flex w-full items-center justify-between">
             <p className="font-medium">Dados da inscrição</p>
             <span className="badge rounded-full px-2 py-1">
-              {applicationData.RegistrationDataApplication.length === 0
-                ? "Pendente"
-                : "Finalizado"}
+              {applicationData.registrationDataApplication?.id
+                ? "Preenchido"
+                : "Pendente"}
             </span>
           </div>
           <div className="flex w-full items-center justify-between">
             <p className="font-medium">Dados acadêmicos</p>
             <span className="badge rounded-full px-2 py-1">
-              {applicationData.AcademicDataApplication.length === 0
-                ? "Pendente"
-                : "Finalizado"}
+              {applicationData.academicDataApplication?.id
+                ? "Preenchido"
+                : "Pendente"}
             </span>
           </div>
           <div className="flex w-full items-center justify-between">
             <p className="font-medium">Currículo</p>
             <span className="badge rounded-full px-2 py-1">
               {applicationData.UserDocumentApplication.length === 0
-                ? "Pendente"
-                : "Finalizado"}
+                ? "Preenchido"
+                : "Pendente"}
             </span>
           </div>
         </div>

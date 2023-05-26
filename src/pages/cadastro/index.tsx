@@ -13,6 +13,8 @@ import { api } from "@/utils/api";
 import LogoFacom from "public/images/logo-facom.png";
 import Container from "@/components/Container";
 import Input from "@/components/Input";
+import clsx from "clsx";
+import { handleTRPCError } from "@/utils/errors";
 
 const Cadastro: NextPage = () => {
   const router = useRouter();
@@ -33,9 +35,13 @@ const Cadastro: NextPage = () => {
   const { mutateAsync, isLoading } = api.auth.signUp.useMutation();
 
   const onSubmit = async (data: SignUpSchema) => {
-    const result = await mutateAsync(data);
-    if (result.status === 201) {
-      await router.push("/");
+    try {
+      const result = await mutateAsync(data);
+      if (result.status === 201) {
+        await router.push("/");
+      }
+    } catch (error) {
+      handleTRPCError(error);
     }
   };
 
@@ -103,7 +109,7 @@ const Cadastro: NextPage = () => {
                 />
               </div>
               <button
-                className="btn-primary btn"
+                className={clsx("btn-primary btn", isLoading && "loading")}
                 type="submit"
                 disabled={isLoading}
               >
