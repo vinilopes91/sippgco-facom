@@ -1,9 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { api, type RouterOutputs } from "@/utils/api";
-import { TrashIcon } from "@heroicons/react/24/outline";
 import { type Document } from "@prisma/client";
 import FileInput from "../FileInput";
-import clsx from "clsx";
 import { useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import { handleTRPCError } from "@/utils/errors";
@@ -44,12 +42,6 @@ const StepFileInput = ({
         enabled: isUploaded,
       }
     );
-  const { mutateAsync: deleteFile, isLoading: isDeleting } =
-    api.userDocument.delete.useMutation({
-      onSuccess: () => {
-        void ctx.userDocument.invalidate();
-      },
-    });
 
   const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.length === 0) {
@@ -84,6 +76,7 @@ const StepFileInput = ({
         await updateUserDocumentApplication({
           id: userDocument.id,
           key,
+          filename: e.target.files![0]!.name,
         });
         await ctx.application.invalidate();
         if (fileInputRef.current) fileInputRef.current.value = "";
@@ -93,6 +86,7 @@ const StepFileInput = ({
           applicationId: applicationData.id,
           documentId,
           key,
+          filename: e.target.files![0]!.name,
         });
         await ctx.application.invalidate();
         if (fileInputRef.current) fileInputRef.current.value = "";
@@ -103,18 +97,14 @@ const StepFileInput = ({
     setIsUploading(false);
   };
 
-  const handleClickDeleteButton = async (id: string) => {
-    await deleteFile({ id });
-    await ctx.application.invalidate();
-  };
-
   return (
     <div className="loading flex flex-col gap-2" key={documentId}>
       <FileInput
         label={document.name}
         accept="application/pdf"
-        disabled={isUploaded || isUploading}
+        disabled={isUploading}
         onChange={onFileChange}
+        required={!isUploaded || document.required}
         ref={fileInputRef}
       />
       {isUploaded && (
@@ -125,20 +115,9 @@ const StepFileInput = ({
             <div className="flex w-full items-center gap-4">
               <a
                 className="link"
-                download={`${document.name}.pdf`}
+                download={`${userDocument.filename}`}
                 href={data}
-              >{`${document.name}.pdf`}</a>
-              <button
-                type="button"
-                onClick={() => handleClickDeleteButton(userDocument.id)}
-                disabled={isDeleting}
-                className={clsx(
-                  "btn-ghost btn h-auto min-h-0 p-0",
-                  isDeleting && "loading"
-                )}
-              >
-                <TrashIcon title="Remover" width={20} stroke="red" />
-              </button>
+              >{`${userDocument.filename}`}</a>
             </div>
           )}
         </>

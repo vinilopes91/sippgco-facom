@@ -26,8 +26,6 @@ export const userDocumentRouter = createTRPCRouter({
 
     const uploadUrl = s3.getSignedUrl("putObject", s3Params);
 
-    console.log(uploadUrl, key);
-
     return {
       uploadUrl,
       key,
@@ -44,6 +42,7 @@ export const userDocumentRouter = createTRPCRouter({
             applicationId: input.applicationId,
             step: input.step,
             documentId: input.documentId,
+            filename: input.filename,
           },
         });
 
@@ -63,6 +62,7 @@ export const userDocumentRouter = createTRPCRouter({
             applicationId: input.applicationId,
             step: input.step,
             documentId: input.documentId,
+            filename: input.filename,
           },
         });
 

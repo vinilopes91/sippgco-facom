@@ -1,7 +1,8 @@
 import { Modality, VacancyType } from "@prisma/client";
 import * as z from "zod";
 
-export const createRegistrationDataApplication = z.object({
+export const createRegistrationDataApplicationSchema = z.object({
+  applicationId: z.string().cuid(),
   specialStudent: z.boolean(),
   scholarship: z.boolean(),
   modality: z.enum([
@@ -17,6 +18,15 @@ export const createRegistrationDataApplication = z.object({
   researchLine: z.string().cuid(),
 });
 
-export type CreateRegistrationDataApplication = z.infer<
-  typeof createRegistrationDataApplication
+export type CreateRegistrationDataApplicationSchema = z.infer<
+  typeof createRegistrationDataApplicationSchema
+>;
+
+export const updateRegistrationDataApplicationSchema =
+  createRegistrationDataApplicationSchema.partial().extend({
+    id: z.string().cuid(),
+  });
+
+export type UpdateRegistrationDataApplicationSchema = z.infer<
+  typeof updateRegistrationDataApplicationSchema
 >;

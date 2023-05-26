@@ -1,26 +1,30 @@
 import { type NextPage } from "next";
 import { useRouter } from "next/router";
-
 import { api } from "@/utils/api";
 import Base from "@/layout/Base";
 import ApplicationStepper from "@/components/ApplicationStepper";
-import FileInput from "@/components/FileInput";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  createRegistrationDataApplication,
-  type CreateRegistrationDataApplication,
+  createRegistrationDataApplicationSchema,
+  type CreateRegistrationDataApplicationSchema,
 } from "@/common/validation/registrationDataApplication";
 import { useForm } from "react-hook-form";
 import Select from "@/components/Select";
 import { Modality, VacancyType } from "@prisma/client";
 import { modalityMapper, vacancyTypeMapper } from "@/utils/mapper";
+import StepFileInput from "@/components/StepFileInput/StepFileInput";
+import { useEffect } from "react";
+import { handleTRPCError } from "@/utils/errors";
+import { toast } from "react-hot-toast";
+import clsx from "clsx";
 
 const RegistrationData: NextPage = () => {
   const router = useRouter();
+  const ctx = api.useContext();
 
-  const { register, handleSubmit, formState } =
-    useForm<CreateRegistrationDataApplication>({
-      resolver: zodResolver(createRegistrationDataApplication),
+  const { register, handleSubmit, formState, setValue } =
+    useForm<CreateRegistrationDataApplicationSchema>({
+      resolver: zodResolver(createRegistrationDataApplicationSchema),
     });
 
   const { errors } = formState;
@@ -35,8 +39,6 @@ const RegistrationData: NextPage = () => {
       }
     );
 
-  console.log(applicationData);
-
   const {
     data: registrationDataDocuments,
     isLoading: isLoadingRegistrationDataDocuments,
@@ -50,6 +52,37 @@ const RegistrationData: NextPage = () => {
     }
   );
 
+  useEffect(() => {
+    if (router.query.applicationId) {
+      setValue("applicationId", router.query.applicationId as string);
+    }
+  }, [router.query.applicationId, setValue]);
+
+  useEffect(() => {
+    if (applicationData?.registrationDataApplication) {
+      setValue(
+        "vacancyType",
+        applicationData.registrationDataApplication.vacancyType
+      );
+      setValue(
+        "modality",
+        applicationData.registrationDataApplication.modality
+      );
+      setValue(
+        "researchLine",
+        applicationData.registrationDataApplication.researchLineId
+      );
+      setValue(
+        "scholarship",
+        applicationData.registrationDataApplication.scholarship
+      );
+      setValue(
+        "specialStudent",
+        applicationData.registrationDataApplication.specialStudent
+      );
+    }
+  }, [applicationData?.registrationDataApplication, setValue]);
+
   if (!router.query.applicationId) {
     return <div>404</div>;
   }
@@ -58,13 +91,47 @@ const RegistrationData: NextPage = () => {
     return <div>Loading...</div>;
   }
 
-  if (!applicationData) {
+  if (!applicationData || !registrationDataDocuments) {
     return <div>404</div>;
   }
 
-  const onSubmit = (data: CreateRegistrationDataApplication) => {
-    console.log("Submit..", data);
-    // return mutate(data);
+  const registrationDataApplicationId =
+    applicationData.registrationDataApplication?.id;
+
+  const requiredDocuments = registrationDataDocuments?.filter(
+    (processDocument) => processDocument.document.required
+  );
+
+  const onSubmit = async (data: CreateRegistrationDataApplicationSchema) => {
+    const disableSubmit = requiredDocuments.some((processDocument) => {
+      const document = applicationData.UserDocumentApplication.find(
+        (userDocument) => userDocument.documentId === processDocument.documentId
+      );
+
+      return !document;
+    });
+
+    if (disableSubmit) {
+      toast.error("Você precisa enviar todos os documentos obrigatórios");
+      return;
+    }
+
+    if (registrationDataApplicationId) {
+      // updatePersonalDataApplication({
+      //   id: registrationDataApplicationId,
+      //   ...data,
+      // });
+    } else {
+      try {
+        // await createPersonalDataApplication(data);
+        await router.push(
+          `/candidato/inscricao/${applicationData.id}/dados-academicos`
+        );
+      } catch (error) {
+        handleTRPCError(error, "Erro ao registrar dados pessoais");
+      }
+    }
+    void ctx.application.invalidate();
   };
 
   return (
@@ -89,9 +156,7 @@ const RegistrationData: NextPage = () => {
                 error={errors.vacancyType}
                 required
               >
-                <option selected value="">
-                  Selecione
-                </option>
+                <option value="">Selecione</option>
                 {Object.keys(VacancyType).map((type) => (
                   <option key={type} value={type}>
                     {vacancyTypeMapper[type as keyof typeof VacancyType]}
@@ -106,9 +171,7 @@ const RegistrationData: NextPage = () => {
                 error={errors.modality}
                 required
               >
-                <option selected value="">
-                  Selecione
-                </option>
+                <option value="">Selecione</option>
                 {Object.keys(Modality).map((modality) => (
                   <option key={modality} value={modality}>
                     {modalityMapper[modality as keyof typeof Modality]}
@@ -123,9 +186,7 @@ const RegistrationData: NextPage = () => {
                 error={errors.researchLine}
                 required
               >
-                <option selected value="">
-                  Selecione
-                </option>
+                <option value="">Selecione</option>
                 {applicationData.process.ProcessResearchLine.map(
                   ({ researchLine }) => (
                     <option key={researchLine.id} value={researchLine.id}>
@@ -177,11 +238,41 @@ const RegistrationData: NextPage = () => {
                 <h3 className="text-lg font-medium">Documentos</h3>
                 <div className="grid grid-cols-3 gap-2">
                   {registrationDataDocuments.map(({ document, documentId }) => (
-                    <FileInput key={documentId} label={document.name} />
+                    <StepFileInput
+                      key={documentId}
+                      applicationData={applicationData}
+                      document={document}
+                      documentId={documentId}
+                    />
                   ))}
                 </div>
               </div>
             )}
+          <div className="flex items-center justify-end">
+            {registrationDataApplicationId ? (
+              <button
+                className={clsx(
+                  "btn-primary btn w-36"
+                  // updatingPersonalDataApplication && "loading"
+                )}
+                // disabled={updatingPersonalDataApplication}
+                type="submit"
+              >
+                Salvar
+              </button>
+            ) : (
+              <button
+                className={clsx(
+                  "btn-primary btn w-36"
+                  // creatingPersonalDataApplication && "loading"
+                )}
+                // disabled={creatingPersonalDataApplication}
+                type="submit"
+              >
+                Avançar
+              </button>
+            )}
+          </div>
         </form>
       </div>
     </Base>

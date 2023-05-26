@@ -123,6 +123,7 @@ model UserDocumentApplication {
     documentId         String
     applicationId      String
     key                String
+    filename           String
     step               String
     status             AnalysisStatus?
     reasonForRejection String?

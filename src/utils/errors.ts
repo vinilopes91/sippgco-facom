@@ -27,5 +27,3 @@ export const handleTRPCError = (
     toast.error(defaultMessage);
   }
 };
-
-// TODO: adicionar handler em todas as chamadas

@@ -12,7 +12,6 @@ export const applicationRouter = createTRPCRouter({
         .optional()
     )
     .query(async ({ ctx, input }) => {
-      console.log("input", input);
       const applicationsList = await ctx.prisma.application.findMany({
         where: {
           userId: ctx.session.user.id,

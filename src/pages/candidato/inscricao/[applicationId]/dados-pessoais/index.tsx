@@ -22,6 +22,7 @@ import { handleTRPCError } from "@/utils/errors";
 const PersonalData: NextPage = () => {
   const router = useRouter();
   const { data: userSession, status: sessionStatus } = useSession();
+  const ctx = api.useContext();
 
   const { register, handleSubmit, formState, setValue } =
     useForm<CreatePersonalDataApplicationSchema>({
@@ -56,6 +57,12 @@ const PersonalData: NextPage = () => {
       }
     );
 
+  useEffect(() => {
+    if (applicationData?.personalDataApplication) {
+      setValue("phone", applicationData.personalDataApplication.phone);
+    }
+  }, [applicationData?.personalDataApplication, setValue]);
+
   const {
     data: personalDataDocuments,
     isLoading: isLoadingPersonalDataDocuments,
@@ -77,6 +84,9 @@ const PersonalData: NextPage = () => {
     mutate: updatePersonalDataApplication,
     isLoading: updatingPersonalDataApplication,
   } = api.personalDataApplication.update.useMutation({
+    onSuccess: () => {
+      toast.success("Dados pessoais salvos com sucesso.");
+    },
     onError: (error) => {
       handleTRPCError(error, "Erro ao salvar dados pessoais.");
     },
@@ -133,6 +143,7 @@ const PersonalData: NextPage = () => {
         handleTRPCError(error, "Erro ao registrar dados pessoais");
       }
     }
+    void ctx.application.invalidate();
   };
 
   return (
@@ -173,6 +184,7 @@ const PersonalData: NextPage = () => {
                 placeholder="(99) 9 9999-9999"
                 error={errors.phone}
                 register={register}
+                required
                 customInput={Input<CreatePersonalDataApplicationSchema>}
                 onValueChange={(values) => {
                   setValue("phone", values.value);
@@ -195,16 +207,14 @@ const PersonalData: NextPage = () => {
             <div className="mt-4 flex flex-col">
               <h3 className="text-lg font-medium">Documentos</h3>
               <div className="grid grid-cols-3 gap-2">
-                {personalDataDocuments.map(({ document, documentId }) => {
-                  return (
-                    <StepFileInput
-                      key={documentId}
-                      applicationData={applicationData}
-                      document={document}
-                      documentId={documentId}
-                    />
-                  );
-                })}
+                {personalDataDocuments.map(({ document, documentId }) => (
+                  <StepFileInput
+                    key={documentId}
+                    applicationData={applicationData}
+                    document={document}
+                    documentId={documentId}
+                  />
+                ))}
               </div>
             </div>
           )}

@@ -11,6 +11,7 @@ export const createUserDocumentApplication = z.object({
     Step.REGISTRATION_DATA,
   ]),
   key: z.string().min(1, "Campo obrigatório"),
+  filename: z.string().min(1, "Campo obrigatório"),
 });
 
 export type CreateUserDocumentApplication = z.infer<
