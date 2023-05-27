@@ -100,11 +100,12 @@ const StepFileInput = ({
   return (
     <div className="loading flex flex-col gap-2" key={documentId}>
       <FileInput
+        showRequiredMessage={document.required}
         label={document.name}
         accept="application/pdf"
         disabled={isUploading}
         onChange={onFileChange}
-        required={!isUploaded || document.required}
+        required={!isUploaded && document.required}
         ref={fileInputRef}
       />
       {isUploaded && (

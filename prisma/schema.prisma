@@ -48,6 +48,7 @@ enum Modality {
 }
 
 enum VacancyType {
+    BROAD_COMPETITION
     RACIAL_QUOTA
     INDIGENOUS_QUOTA
     DEFICIENT_QUOTA

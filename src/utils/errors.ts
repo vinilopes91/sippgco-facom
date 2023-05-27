@@ -18,9 +18,11 @@ export const handleTRPCError = (
       const key = Object.keys(fieldErrors)[0];
       const errorMessage = fieldErrors[key as string];
       errorMessage && errorMessage[0] && toast.error(errorMessage[0]);
-    } else {
-      toast.error(defaultMessage);
+    } else if (error.message) {
+      toast.error(error.message);
+      return;
     }
+    toast.error(defaultMessage);
     return;
   }
   if (error instanceof Error) {

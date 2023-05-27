@@ -1,14 +1,14 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import {
-  createPersonalDataApplicationSchema,
-  updatePersonalDataApplicationSchema,
-} from "@/common/validation/personalDataApplication";
+  createRegistrationDataApplicationSchema,
+  updateRegistrationDataApplicationSchema,
+} from "@/common/validation/registrationDataApplication";
 import { TRPCError } from "@trpc/server";
 import { validateApplicationRequest } from "@/server/utils/validateApplicationRequest";
 
-export const personalDataApplicationRouter = createTRPCRouter({
+export const registrationDataApplicationRouter = createTRPCRouter({
   create: protectedProcedure
-    .input(createPersonalDataApplicationSchema)
+    .input(createRegistrationDataApplicationSchema)
     .mutation(async ({ ctx, input }) => {
       const application = await ctx.prisma.application.findFirst({
         where: {
@@ -21,7 +21,7 @@ export const personalDataApplicationRouter = createTRPCRouter({
 
       validateApplicationRequest(application);
 
-      const register = await ctx.prisma.personalDataApplication.findFirst({
+      const register = await ctx.prisma.registrationDataApplication.findFirst({
         where: {
           userId: ctx.session.user.id,
           applicationId: input.applicationId,
@@ -35,7 +35,7 @@ export const personalDataApplicationRouter = createTRPCRouter({
         });
       }
 
-      return ctx.prisma.personalDataApplication.create({
+      return ctx.prisma.registrationDataApplication.create({
         data: {
           userId: ctx.session.user.id,
           ...input,
@@ -43,9 +43,9 @@ export const personalDataApplicationRouter = createTRPCRouter({
       });
     }),
   update: protectedProcedure
-    .input(updatePersonalDataApplicationSchema)
+    .input(updateRegistrationDataApplicationSchema)
     .mutation(async ({ ctx, input }) => {
-      const register = await ctx.prisma.personalDataApplication.findFirst({
+      const register = await ctx.prisma.registrationDataApplication.findFirst({
         where: {
           id: input.id,
         },
@@ -67,7 +67,7 @@ export const personalDataApplicationRouter = createTRPCRouter({
 
       validateApplicationRequest(register.application);
 
-      return ctx.prisma.personalDataApplication.update({
+      return ctx.prisma.registrationDataApplication.update({
         where: {
           id: input.id,
         },

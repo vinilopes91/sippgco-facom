@@ -24,7 +24,7 @@ const Inscricao: NextPage = () => {
   }
 
   if (isLoadingApplicationData) {
-    return <div>Loading...</div>;
+    return <div>Carregando...</div>;
   }
 
   if (!applicationData) {

@@ -7,18 +7,23 @@ import ApplicationStepper from "@/components/ApplicationStepper";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  type CreateAcademicDataApplication,
-  createAcademicDataApplication,
+  type CreateAcademicDataApplicationSchema,
+  createAcademicDataApplicationSchema,
 } from "@/common/validation/academicDataApplication";
 import Input from "@/components/Input";
-import FileInput from "@/components/FileInput";
+import StepFileInput from "@/components/StepFileInput/StepFileInput";
+import { useEffect } from "react";
+import { toast } from "react-hot-toast";
+import { handleTRPCError } from "@/utils/errors";
+import clsx from "clsx";
 
 const AcademicData: NextPage = () => {
   const router = useRouter();
+  const ctx = api.useContext();
 
-  const { register, handleSubmit, formState } =
-    useForm<CreateAcademicDataApplication>({
-      resolver: zodResolver(createAcademicDataApplication),
+  const { register, handleSubmit, formState, setValue } =
+    useForm<CreateAcademicDataApplicationSchema>({
+      resolver: zodResolver(createAcademicDataApplicationSchema),
     });
 
   const { errors } = formState;
@@ -33,6 +38,30 @@ const AcademicData: NextPage = () => {
       }
     );
 
+  useEffect(() => {
+    if (applicationData) {
+      setValue("applicationId", applicationData.id);
+    }
+    if (applicationData?.academicDataApplication) {
+      setValue(
+        "completionOrForecastYear",
+        applicationData.academicDataApplication.completionOrForecastYear
+      );
+      setValue(
+        "courseArea",
+        applicationData.academicDataApplication.courseArea
+      );
+      setValue(
+        "institution",
+        applicationData.academicDataApplication.institution
+      );
+      setValue(
+        "wasSpecialStudent",
+        applicationData.academicDataApplication.wasSpecialStudent
+      );
+    }
+  }, [applicationData, setValue]);
+
   const {
     data: academicDataDocuments,
     isLoading: isLoadingAcademicDataDocuments,
@@ -46,21 +75,70 @@ const AcademicData: NextPage = () => {
     }
   );
 
+  const {
+    mutateAsync: createAcademicDataApplication,
+    isLoading: creatingAcademicDataApplication,
+  } = api.academicDataApplication.create.useMutation();
+  const {
+    mutate: updateAcademicDataApplication,
+    isLoading: updatingAcademicDataApplication,
+  } = api.academicDataApplication.update.useMutation({
+    onSuccess: () => {
+      toast.success("Dados pessoais salvos com sucesso.");
+    },
+    onError: (error) => {
+      handleTRPCError(error, "Erro ao salvar dados acadêmicos.");
+    },
+  });
+
   if (!router.query.applicationId) {
     return <div>404</div>;
   }
 
-  if (isLoadingApplicationData) {
-    return <div>Loading...</div>;
+  if (isLoadingApplicationData || isLoadingAcademicDataDocuments) {
+    return <div>Carregando...</div>;
   }
 
-  if (!applicationData) {
+  if (!applicationData || !academicDataDocuments) {
     return <div>404</div>;
   }
 
-  const onSubmit = (data: CreateAcademicDataApplication) => {
-    console.log("Submit..", data);
-    // return mutate(data);
+  const academicDataApplicationId = applicationData.academicDataApplication?.id;
+
+  const requiredDocuments = academicDataDocuments?.filter(
+    (processDocument) => processDocument.document.required
+  );
+
+  const onSubmit = async (data: CreateAcademicDataApplicationSchema) => {
+    const disableSubmit = requiredDocuments.some((processDocument) => {
+      const document = applicationData.UserDocumentApplication.find(
+        (userDocument) => userDocument.documentId === processDocument.documentId
+      );
+
+      return !document;
+    });
+
+    if (disableSubmit) {
+      toast.error("Você precisa enviar todos os documentos obrigatórios");
+      return;
+    }
+
+    if (academicDataApplicationId) {
+      updateAcademicDataApplication({
+        id: academicDataApplicationId,
+        ...data,
+      });
+    } else {
+      try {
+        await createAcademicDataApplication(data);
+        await router.push(
+          `/candidato/inscricao/${applicationData.id}/curriculo`
+        );
+      } catch (error) {
+        handleTRPCError(error, "Erro ao registrar dados acadêmicos.");
+      }
+    }
+    void ctx.application.invalidate();
   };
 
   return (
@@ -76,24 +154,48 @@ const AcademicData: NextPage = () => {
           <div className="mt-6 flex flex-col">
             <h3 className="text-lg font-medium">Dados acadêmicos</h3>
             <div className="grid grid-cols-3 gap-2">
-              <Input
-                label="Curso/Área"
-                name="courseArea"
-                register={register}
-                error={errors.courseArea}
-              />
+              <div>
+                <Input
+                  label="Curso/Área"
+                  placeholder="Curso/Área"
+                  name="courseArea"
+                  register={register}
+                  error={errors.courseArea}
+                  required
+                />
+                <p className="mt-1 text-xs">
+                  * Curso de graduação ou área do mestrado para candidatos a
+                  doutorado
+                </p>
+              </div>
               <Input
                 label="Ano ou previsão de conclusão"
+                placeholder="XXXX"
                 name="completionOrForecastYear"
                 register={register}
                 error={errors.completionOrForecastYear}
+                required
               />
               <Input
                 label="Instituição"
+                placeholder="Instituição"
                 name="institution"
                 register={register}
                 error={errors.institution}
+                required
               />
+            </div>
+            <div className="mt-2 flex items-center gap-2">
+              <input
+                className="checkbox"
+                type="checkbox"
+                id="wasSpecialStudent"
+                {...register("wasSpecialStudent")}
+              />
+              <label htmlFor="wasSpecialStudent">
+                Fui aluno especial do Programa de Pós-graduação da Ciência da
+                Computação da UFU
+              </label>
             </div>
           </div>
 
@@ -112,11 +214,41 @@ const AcademicData: NextPage = () => {
               <h3 className="text-lg font-medium">Documentos</h3>
               <div className="grid grid-cols-3 gap-2">
                 {academicDataDocuments.map(({ document, documentId }) => (
-                  <FileInput key={documentId} label={document.name} />
+                  <StepFileInput
+                    key={documentId}
+                    applicationData={applicationData}
+                    document={document}
+                    documentId={documentId}
+                  />
                 ))}
               </div>
             </div>
           )}
+          <div className="flex items-center justify-end">
+            {academicDataApplicationId ? (
+              <button
+                className={clsx(
+                  "btn-primary btn w-36",
+                  updatingAcademicDataApplication && "loading"
+                )}
+                disabled={updatingAcademicDataApplication}
+                type="submit"
+              >
+                Salvar
+              </button>
+            ) : (
+              <button
+                className={clsx(
+                  "btn-primary btn w-36",
+                  creatingAcademicDataApplication && "loading"
+                )}
+                disabled={creatingAcademicDataApplication}
+                type="submit"
+              >
+                Avançar
+              </button>
+            )}
+          </div>
         </form>
       </div>
     </Base>

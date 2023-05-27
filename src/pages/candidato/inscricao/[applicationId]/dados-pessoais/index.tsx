@@ -4,46 +4,30 @@ import { useRouter } from "next/router";
 import { api } from "@/utils/api";
 import Base from "@/layout/Base";
 import ApplicationStepper from "@/components/ApplicationStepper";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import {
   type CreatePersonalDataApplicationSchema,
   createPersonalDataApplicationSchema,
 } from "@/common/validation/personalDataApplication";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSession } from "next-auth/react";
-import Input from "@/components/Input";
 import StepFileInput from "@/components/StepFileInput/StepFileInput";
 import { toast } from "react-hot-toast";
 import { NumberFormatBase } from "react-number-format";
 import { maskPhoneNumber } from "@/utils/mask";
 import clsx from "clsx";
 import { handleTRPCError } from "@/utils/errors";
+import ControlledInput from "@/components/ControlledInput";
 
 const PersonalData: NextPage = () => {
   const router = useRouter();
   const { data: userSession, status: sessionStatus } = useSession();
   const ctx = api.useContext();
 
-  const { register, handleSubmit, formState, setValue } =
+  const { handleSubmit, formState, setValue, control } =
     useForm<CreatePersonalDataApplicationSchema>({
       resolver: zodResolver(createPersonalDataApplicationSchema),
     });
-
-  useEffect(() => {
-    if (userSession && userSession.user.name && userSession.user.email) {
-      setValue("name", userSession.user.name);
-      setValue("email", userSession.user.email);
-    }
-  }, [setValue, userSession]);
-
-  useEffect(() => {
-    if (
-      router.query.applicationId &&
-      typeof router.query.applicationId === "string"
-    ) {
-      setValue("applicationId", router.query.applicationId);
-    }
-  }, [router.query.applicationId, setValue]);
 
   const { errors } = formState;
 
@@ -58,10 +42,13 @@ const PersonalData: NextPage = () => {
     );
 
   useEffect(() => {
+    if (applicationData) {
+      setValue("applicationId", applicationData.id);
+    }
     if (applicationData?.personalDataApplication) {
       setValue("phone", applicationData.personalDataApplication.phone);
     }
-  }, [applicationData?.personalDataApplication, setValue]);
+  }, [applicationData, setValue]);
 
   const {
     data: personalDataDocuments,
@@ -99,13 +86,13 @@ const PersonalData: NextPage = () => {
   if (
     isLoadingApplicationData ||
     sessionStatus === "loading" ||
-    !personalDataDocuments
+    isLoadingPersonalDataDocuments
   ) {
-    return <div>Loading...</div>;
+    return <div>Carregando...</div>;
   }
 
-  if (!applicationData) {
-    return <div>Inscrição não encontrada.</div>;
+  if (!applicationData || !personalDataDocuments) {
+    return <div>404</div>;
   }
 
   const personalDataApplicationId = applicationData.personalDataApplication?.id;
@@ -160,35 +147,41 @@ const PersonalData: NextPage = () => {
           <div className="mt-6 flex flex-col">
             <h3 className="text-lg font-medium">Dados pessoais</h3>
             <div className="grid grid-cols-3 gap-2">
-              <Input
+              <ControlledInput
                 label="Nome completo"
                 name="name"
-                register={register}
-                error={errors.name}
                 disabled
+                value={userSession?.user.name as string}
               />
-              <Input
+              <ControlledInput
                 label="E-mail"
                 name="email"
-                register={register}
-                error={errors.email}
                 disabled
+                value={userSession?.user.email as string}
               />
-              <NumberFormatBase
-                format={maskPhoneNumber}
-                id="phone"
+              <Controller
+                control={control}
                 name="phone"
-                minLength={14}
-                maxLength={16}
-                label="Telefone"
-                placeholder="(99) 9 9999-9999"
-                error={errors.phone}
-                register={register}
-                required
-                customInput={Input<CreatePersonalDataApplicationSchema>}
-                onValueChange={(values) => {
-                  setValue("phone", values.value);
-                }}
+                render={({ field: { name, value } }) => (
+                  <NumberFormatBase
+                    name={name}
+                    value={value}
+                    id="phone"
+                    format={maskPhoneNumber}
+                    minLength={14}
+                    maxLength={16}
+                    label="Telefone"
+                    placeholder="(99) 9 9999-9999"
+                    required
+                    valueIsNumericString
+                    errorMessage={errors.phone?.message}
+                    customInput={ControlledInput}
+                    disabled={isLoadingApplicationData}
+                    onValueChange={(values) => {
+                      setValue("phone", values.value);
+                    }}
+                  />
+                )}
               />
             </div>
           </div>

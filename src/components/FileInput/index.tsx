@@ -6,13 +6,14 @@ import tailwindColors from "tailwindcss/colors";
 type FileInputProps = Omit<React.ComponentPropsWithoutRef<"input">, "type"> & {
   label: string;
   errorMessage?: string;
+  showRequiredMessage?: boolean;
 };
 
 const FileInput = (
   props: FileInputProps,
   ref: React.ForwardedRef<HTMLInputElement>
 ) => {
-  const { label, errorMessage, ...inputProps } = props;
+  const { label, errorMessage, showRequiredMessage, ...inputProps } = props;
 
   const styleVariants = {
     error: "file-input-error",
@@ -20,8 +21,11 @@ const FileInput = (
 
   return (
     <div className="form-control w-full">
-      <label className="label" htmlFor={props.name}>
+      <label className="label justify-start gap-2" htmlFor={props.name}>
         <span className="label-text font-medium">{label}</span>
+        {showRequiredMessage && (
+          <span className="text-xs font-medium text-error">* Obrigatório</span>
+        )}
       </label>
       <div className="flex items-center justify-between">
         <input

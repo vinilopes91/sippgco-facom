@@ -1,5 +1,6 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
+import { isAfter, isBefore } from "date-fns";
 import { z } from "zod";
 
 export const applicationRouter = createTRPCRouter({
@@ -76,6 +77,39 @@ export const applicationRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { processId } = input;
+
+      const process = await ctx.prisma.process.findFirst({
+        where: {
+          id: processId,
+        },
+      });
+
+      if (!process) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Processo seletivo não encontrado",
+        });
+      }
+
+      const { applicationStartDate, applicationEndDate } = process;
+
+      const isValidPeriod =
+        isBefore(new Date(), new Date(applicationEndDate)) &&
+        isAfter(new Date(), new Date(applicationStartDate));
+
+      if (!isValidPeriod) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Período de inscrição encerrado",
+        });
+      }
+
+      if (process.status !== "ACTIVE") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Processo seletivo não está ativo",
+        });
+      }
 
       const applicationExists = await ctx.prisma.application.findFirst({
         where: {

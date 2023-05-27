@@ -14,6 +14,7 @@ export const modalityMapper = {
 } as const;
 
 export const vacancyTypeMapper = {
+  [VacancyType.BROAD_COMPETITION]: "Ampla concorrência",
   [VacancyType.DEFICIENT_QUOTA]: "Pessoas com deficiência",
   [VacancyType.INDIGENOUS_QUOTA]: "Indígenas",
   [VacancyType.RACIAL_QUOTA]: "Pretos, pardos e indígenas",

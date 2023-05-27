@@ -62,7 +62,7 @@ const ProcessDetail: NextPage = () => {
   }
 
   if (isLoadingProcess) {
-    return <div>Loading...</div>;
+    return <div>Carregando...</div>;
   }
 
   if (!processData) {

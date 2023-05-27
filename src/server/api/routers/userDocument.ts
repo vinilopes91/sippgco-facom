@@ -94,6 +94,7 @@ export const userDocumentRouter = createTRPCRouter({
       const url = await s3.getSignedUrlPromise("getObject", {
         Bucket: BUCKET_NAME,
         Key: userDocumentApplication.key,
+        ResponseContentDisposition: `attachment; filename=${userDocumentApplication.filename}`,
       });
 
       return url;

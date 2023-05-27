@@ -3,25 +3,52 @@ import * as z from "zod";
 
 export const createDocumentSchema = z.object({
   name: z.string().min(1, "Campo obrigatório"),
-  step: z.enum([
-    Step.ACADEMIC_DATA,
-    Step.CURRICULUM,
-    Step.PERSONAL_DATA,
-    Step.REGISTRATION_DATA,
-  ]),
+  step: z.enum(
+    [
+      Step.ACADEMIC_DATA,
+      Step.CURRICULUM,
+      Step.PERSONAL_DATA,
+      Step.REGISTRATION_DATA,
+    ],
+    {
+      errorMap: (issue, ctx) => {
+        if (issue.code === z.ZodIssueCode.invalid_enum_value) {
+          return { message: "Opção inválida" };
+        }
+        return { message: ctx.defaultError };
+      },
+    }
+  ),
   modality: z.array(
-    z.enum([
-      Modality.DOCTORATE,
-      Modality.REGULAR_MASTER,
-      Modality.SPECIAL_MASTER,
-    ])
+    z.enum(
+      [Modality.DOCTORATE, Modality.REGULAR_MASTER, Modality.SPECIAL_MASTER],
+      {
+        errorMap: (issue, ctx) => {
+          if (issue.code === z.ZodIssueCode.invalid_enum_value) {
+            return { message: "Opção inválida" };
+          }
+          return { message: ctx.defaultError };
+        },
+      }
+    )
   ),
   vacancyType: z.array(
-    z.enum([
-      VacancyType.DEFICIENT_QUOTA,
-      VacancyType.INDIGENOUS_QUOTA,
-      VacancyType.RACIAL_QUOTA,
-    ])
+    z.enum(
+      [
+        VacancyType.BROAD_COMPETITION,
+        VacancyType.DEFICIENT_QUOTA,
+        VacancyType.INDIGENOUS_QUOTA,
+        VacancyType.RACIAL_QUOTA,
+      ],
+      {
+        errorMap: (issue, ctx) => {
+          if (issue.code === z.ZodIssueCode.invalid_enum_value) {
+            return { message: "Opção inválida" };
+          }
+          return { message: ctx.defaultError };
+        },
+      }
+    )
   ),
   score: z.number().nonnegative("Valor inválido").optional(),
   maximumScore: z.number().nonnegative("Valor inválido").optional(),

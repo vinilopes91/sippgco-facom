@@ -52,43 +52,56 @@ const RegistrationData: NextPage = () => {
     }
   );
 
-  useEffect(() => {
-    if (router.query.applicationId) {
-      setValue("applicationId", router.query.applicationId as string);
-    }
-  }, [router.query.applicationId, setValue]);
+  const {
+    mutateAsync: createRegistrationDataApplication,
+    isLoading: creatingRegistrationDataApplication,
+  } = api.registrationDataApplication.create.useMutation();
+  const {
+    mutate: updateRegistrationDataApplication,
+    isLoading: updatingRegistrationDataApplication,
+  } = api.registrationDataApplication.update.useMutation({
+    onSuccess: () => {
+      toast.success("Dados da inscrição salvos com sucesso.");
+    },
+    onError: (error) => {
+      handleTRPCError(error, "Erro ao salvar dados da inscrição.");
+    },
+  });
 
   useEffect(() => {
-    if (applicationData?.registrationDataApplication) {
-      setValue(
-        "vacancyType",
-        applicationData.registrationDataApplication.vacancyType
-      );
-      setValue(
-        "modality",
-        applicationData.registrationDataApplication.modality
-      );
-      setValue(
-        "researchLine",
-        applicationData.registrationDataApplication.researchLineId
-      );
-      setValue(
-        "scholarship",
-        applicationData.registrationDataApplication.scholarship
-      );
-      setValue(
-        "specialStudent",
-        applicationData.registrationDataApplication.specialStudent
-      );
+    if (applicationData) {
+      setValue("applicationId", applicationData.id);
+      if (applicationData?.registrationDataApplication) {
+        setValue(
+          "vacancyType",
+          applicationData.registrationDataApplication.vacancyType
+        );
+        setValue(
+          "modality",
+          applicationData.registrationDataApplication.modality
+        );
+        setValue(
+          "researchLineId",
+          applicationData.registrationDataApplication.researchLineId
+        );
+        setValue(
+          "scholarship",
+          applicationData.registrationDataApplication.scholarship
+        );
+        setValue(
+          "specialStudent",
+          applicationData.registrationDataApplication.specialStudent
+        );
+      }
     }
-  }, [applicationData?.registrationDataApplication, setValue]);
+  }, [applicationData, setValue]);
 
   if (!router.query.applicationId) {
     return <div>404</div>;
   }
 
-  if (isLoadingApplicationData) {
-    return <div>Loading...</div>;
+  if (isLoadingApplicationData || isLoadingRegistrationDataDocuments) {
+    return <div>Carregando...</div>;
   }
 
   if (!applicationData || !registrationDataDocuments) {
@@ -117,18 +130,18 @@ const RegistrationData: NextPage = () => {
     }
 
     if (registrationDataApplicationId) {
-      // updatePersonalDataApplication({
-      //   id: registrationDataApplicationId,
-      //   ...data,
-      // });
+      updateRegistrationDataApplication({
+        id: registrationDataApplicationId,
+        ...data,
+      });
     } else {
       try {
-        // await createPersonalDataApplication(data);
+        await createRegistrationDataApplication(data);
         await router.push(
           `/candidato/inscricao/${applicationData.id}/dados-academicos`
         );
       } catch (error) {
-        handleTRPCError(error, "Erro ao registrar dados pessoais");
+        handleTRPCError(error, "Erro ao registrar dados da inscrição");
       }
     }
     void ctx.application.invalidate();
@@ -179,11 +192,11 @@ const RegistrationData: NextPage = () => {
                 ))}
               </Select>
               <Select
-                name="researchLine"
+                name="researchLineId"
                 label="Linha de pesquisa"
                 placeholder="Linha de pesquisa"
                 register={register}
-                error={errors.researchLine}
+                error={errors.researchLineId}
                 required
               >
                 <option value="">Selecione</option>
@@ -252,10 +265,10 @@ const RegistrationData: NextPage = () => {
             {registrationDataApplicationId ? (
               <button
                 className={clsx(
-                  "btn-primary btn w-36"
-                  // updatingPersonalDataApplication && "loading"
+                  "btn-primary btn w-36",
+                  updatingRegistrationDataApplication && "loading"
                 )}
-                // disabled={updatingPersonalDataApplication}
+                disabled={updatingRegistrationDataApplication}
                 type="submit"
               >
                 Salvar
@@ -263,10 +276,10 @@ const RegistrationData: NextPage = () => {
             ) : (
               <button
                 className={clsx(
-                  "btn-primary btn w-36"
-                  // creatingPersonalDataApplication && "loading"
+                  "btn-primary btn w-36",
+                  creatingRegistrationDataApplication && "loading"
                 )}
-                // disabled={creatingPersonalDataApplication}
+                disabled={creatingRegistrationDataApplication}
                 type="submit"
               >
                 Avançar
