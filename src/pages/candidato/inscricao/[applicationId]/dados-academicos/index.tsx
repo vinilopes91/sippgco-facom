@@ -173,6 +173,8 @@ const AcademicData: NextPage = () => {
                 placeholder="XXXX"
                 name="completionOrForecastYear"
                 register={register}
+                minLength={4}
+                maxLength={4}
                 error={errors.completionOrForecastYear}
                 required
               />

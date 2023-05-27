@@ -37,12 +37,8 @@ export const userDocumentRouter = createTRPCRouter({
       const userDocumentApplication =
         await ctx.prisma.userDocumentApplication.create({
           data: {
-            key: input.key,
             userId: ctx.session.user.id,
-            applicationId: input.applicationId,
-            step: input.step,
-            documentId: input.documentId,
-            filename: input.filename,
+            ...input,
           },
         });
 
@@ -57,12 +53,8 @@ export const userDocumentRouter = createTRPCRouter({
             id: input.id,
           },
           data: {
-            key: input.key,
             userId: ctx.session.user.id,
-            applicationId: input.applicationId,
-            step: input.step,
-            documentId: input.documentId,
-            filename: input.filename,
+            ...input,
           },
         });
 

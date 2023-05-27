@@ -54,6 +54,7 @@ const Input = <T extends FieldValues>(props: InputProps<T>) => {
           [styleVariants.error]: error?.message,
         })}
         id={props.name}
+        maxLength={255 || inputProps.maxLength}
         {...register(props.name, registerOptions)}
         {...inputProps}
       />

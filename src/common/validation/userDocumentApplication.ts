@@ -22,6 +22,7 @@ export const createUserDocumentApplication = z.object({
   ),
   key: z.string().min(1, "Campo obrigatório"),
   filename: z.string().min(1, "Campo obrigatório"),
+  quantity: z.number().int().positive().optional(),
 });
 
 export type CreateUserDocumentApplication = z.infer<

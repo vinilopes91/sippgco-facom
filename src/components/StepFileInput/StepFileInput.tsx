@@ -93,6 +93,7 @@ const StepFileInput = ({
       }
     } catch (error) {
       handleTRPCError(error);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
     setIsUploading(false);
   };

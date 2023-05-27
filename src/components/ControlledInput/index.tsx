@@ -36,6 +36,7 @@ const ControlledInput = (props: ControlledInputProps) => {
           [styleVariants.error]: errorMessage,
         })}
         id={props.name}
+        maxLength={255 || inputProps.maxLength}
         {...inputProps}
       />
       {errorMessage && (

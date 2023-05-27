@@ -1,4 +1,5 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
+import { validateApplicationRequest } from "@/server/utils/validateApplicationRequest";
 import { TRPCError } from "@trpc/server";
 import { isAfter, isBefore } from "date-fns";
 import { z } from "zod";
@@ -133,5 +134,34 @@ export const applicationRouter = createTRPCRouter({
       });
 
       return application;
+    }),
+  finishApplicationFill: protectedProcedure
+    .input(
+      z.object({
+        applicationId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const application = await ctx.prisma.application.findFirst({
+        where: {
+          id: input.applicationId,
+        },
+        include: {
+          process: true,
+        },
+      });
+
+      validateApplicationRequest(application);
+
+      const applicationUpdated = await ctx.prisma.application.update({
+        where: {
+          id: input.applicationId,
+        },
+        data: {
+          applicationFilled: true,
+        },
+      });
+
+      return applicationUpdated;
     }),
 });
