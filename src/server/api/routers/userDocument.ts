@@ -1,5 +1,6 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { s3 } from "@/server/utils/s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import {
   createUserDocumentApplication,
   updateUserDocumentApplication,
@@ -7,24 +8,26 @@ import {
 import { randomUUID } from "crypto";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
+import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 
 const BUCKET_NAME = "zeca-pagodinho";
 const UPLOADING_TIME_LIMIT = 30; // 30 seconds
 
 export const userDocumentRouter = createTRPCRouter({
-  createPresignedPdfUrl: protectedProcedure.mutation(({ ctx }) => {
+  createPresignedPdfUrl: protectedProcedure.mutation(async ({ ctx }) => {
     const userId = ctx.session.user.id;
 
     const key = `${userId}/${randomUUID()}.pdf`;
 
-    const s3Params = {
+    const command = new PutObjectCommand({
       Bucket: BUCKET_NAME,
       Key: key,
-      Expires: UPLOADING_TIME_LIMIT,
       ContentType: "application/pdf",
-    };
+    });
 
-    const uploadUrl = s3.getSignedUrl("putObject", s3Params);
+    const uploadUrl = await getSignedUrl(s3, command, {
+      expiresIn: UPLOADING_TIME_LIMIT,
+    });
 
     return {
       uploadUrl,
@@ -83,11 +86,13 @@ export const userDocumentRouter = createTRPCRouter({
         });
       }
 
-      const url = await s3.getSignedUrlPromise("getObject", {
+      const command = new GetObjectCommand({
         Bucket: BUCKET_NAME,
         Key: userDocumentApplication.key,
         ResponseContentDisposition: `attachment; filename=${userDocumentApplication.filename}`,
       });
+
+      const url = await getSignedUrl(s3, command);
 
       return url;
     }),
@@ -115,12 +120,10 @@ export const userDocumentRouter = createTRPCRouter({
         },
       });
 
-      await s3
-        .deleteObject({
-          Bucket: BUCKET_NAME,
-          Key: userDocumentApplication.key,
-        })
-        .promise();
+      await s3.deleteObject({
+        Bucket: BUCKET_NAME,
+        Key: userDocumentApplication.key,
+      });
 
       return true;
     }),
