@@ -16,6 +16,8 @@ export const academicDataApplicationRouter = createTRPCRouter({
         },
         include: {
           process: true,
+          personalDataApplication: true,
+          registrationDataApplication: true,
         },
       });
 
@@ -32,6 +34,20 @@ export const academicDataApplicationRouter = createTRPCRouter({
         throw new TRPCError({
           code: "CONFLICT",
           message: "Já existe um registro com esses dados",
+        });
+      }
+
+      if (!application?.personalDataApplication) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Dados pessoais não foram informados",
+        });
+      }
+
+      if (!application?.registrationDataApplication) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Dados da inscrição não foram informados",
         });
       }
 
