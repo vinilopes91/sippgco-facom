@@ -6,7 +6,7 @@ import { useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import { handleTRPCError } from "@/utils/errors";
 import ControlledInput from "../ControlledInput";
-import { NumericFormat } from "react-number-format";
+import { NumberFormatBase } from "react-number-format";
 import clsx from "clsx";
 import { TrashIcon } from "@heroicons/react/24/outline";
 
@@ -164,7 +164,7 @@ const CurriculumFileInput = ({
           required={!isUploaded && document.required}
           ref={fileInputRef}
         />
-        <NumericFormat
+        <NumberFormatBase
           name={document.name}
           label={`Quantidade X ${document.score!}`}
           placeholder={`Quantidade X ${document.score!}`}
@@ -172,10 +172,7 @@ const CurriculumFileInput = ({
             setQuantity(parseInt(values.value));
           }}
           customInput={ControlledInput}
-          value={quantity}
-          allowNegative={false}
-          valueIsNumericString
-          decimalScale={0}
+          value={quantity || ""}
         />
         <ControlledInput
           name="documentScore"

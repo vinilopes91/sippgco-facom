@@ -1,4 +1,2 @@
-- Corrigir status da etapa de currículo em minhas candidaturas
 - Verificar regra de documentos obrigatórios (marcar só como obrigatório ou não e remover por tipo de vaga, modalidade?)
 - Refatorar navegação do steper/página da etapas
-- Criar CurriculumApplicationData? Implementar etapa de currículo (CurriculumFileInput?)

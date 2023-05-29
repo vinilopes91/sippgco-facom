@@ -96,8 +96,8 @@ model Process {
 
 model Application {
     id                          String                       @id @default(cuid())
-    userId                      String                       @unique
-    processId                   String                       @unique
+    userId                      String
+    processId                   String
     status                      AnalysisStatus?
     reasonForRejection          String?
     applicationFilled           Boolean                      @default(false)
@@ -191,7 +191,7 @@ model ProcessResearchLine {
 
 model PersonalDataApplication {
     id            String      @id @default(cuid())
-    userId        String      @unique
+    userId        String
     applicationId String      @unique
     phone         String
     user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -205,15 +205,15 @@ model PersonalDataApplication {
 
 model RegistrationDataApplication {
     id             String       @id @default(cuid())
-    userId         String       @unique
+    userId         String
     applicationId  String       @unique
-    researchLineId String       @unique
+    researchLineId String
     specialStudent Boolean
     scholarship    Boolean
     modality       Modality
     vacancyType    VacancyType
     user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-    application    Application  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+    application    Application  @relation(fields: [applicationId], references: [id])
     researchLine   ResearchLine @relation(fields: [researchLineId], references: [id], onDelete: Cascade)
     createdAt      DateTime     @default(now())
     updatedAt      DateTime     @updatedAt
@@ -225,14 +225,14 @@ model RegistrationDataApplication {
 
 model AcademicDataApplication {
     id                       String      @id @default(cuid())
-    userId                   String      @unique
+    userId                   String
     applicationId            String      @unique
     courseArea               String
     completionOrForecastYear String
     institution              String
     wasSpecialStudent        Boolean
     user                     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-    application              Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+    application              Application @relation(fields: [applicationId], references: [id])
     createdAt                DateTime    @default(now())
     updatedAt                DateTime    @updatedAt
 

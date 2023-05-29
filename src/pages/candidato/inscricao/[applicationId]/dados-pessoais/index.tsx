@@ -134,7 +134,15 @@ const PersonalData: NextPage = () => {
   };
 
   return (
-    <Base pageTitle="Minhas candidaturas" backBtn>
+    <Base
+      pageTitle="Minhas candidaturas"
+      backBtn
+      backBtnFn={() =>
+        router.push(
+          `/candidato/inscricao/${router.query.applicationId as string}`
+        )
+      }
+    >
       <div className="mt-6 rounded-lg bg-white p-6 drop-shadow-sm">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold">{applicationData.process.name}</h2>

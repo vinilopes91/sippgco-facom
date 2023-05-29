@@ -126,6 +126,8 @@ export const applicationRouter = createTRPCRouter({
         });
       }
 
+      console.log("AQUI\n\n\n\n\n", ctx.session.user.id, processId);
+
       const application = await ctx.prisma.application.create({
         data: {
           userId: ctx.session.user.id,
@@ -148,10 +150,24 @@ export const applicationRouter = createTRPCRouter({
         },
         include: {
           process: true,
+          academicDataApplication: true,
+          personalDataApplication: true,
+          registrationDataApplication: true,
         },
       });
 
       validateApplicationRequest(application);
+
+      if (
+        !application?.academicDataApplication ||
+        !application?.personalDataApplication ||
+        !application?.registrationDataApplication
+      ) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "É necessário o preenchimento das etapas anteriores",
+        });
+      }
 
       const applicationUpdated = await ctx.prisma.application.update({
         where: {

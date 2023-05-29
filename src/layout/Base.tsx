@@ -7,9 +7,10 @@ type BaseProps = {
   children: React.ReactNode;
   pageTitle?: string;
   backBtn?: boolean;
+  backBtnFn?: () => void;
 };
 
-const Base = ({ children, pageTitle, backBtn }: BaseProps) => {
+const Base = ({ children, pageTitle, backBtn, backBtnFn }: BaseProps) => {
   const router = useRouter();
 
   return (
@@ -18,7 +19,12 @@ const Base = ({ children, pageTitle, backBtn }: BaseProps) => {
       <Container className="pt-4">
         <div className="flex items-center">
           {backBtn && (
-            <button className="mr-4" onClick={() => router.back()}>
+            <button
+              className="mr-4"
+              onClick={() => {
+                return backBtnFn ? backBtnFn() : router.back();
+              }}
+            >
               <ArrowSmallLeftIcon width={24} />
             </button>
           )}

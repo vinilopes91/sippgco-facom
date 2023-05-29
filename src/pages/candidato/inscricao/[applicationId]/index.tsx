@@ -117,9 +117,7 @@ const Inscricao: NextPage = () => {
           <div className="flex w-full items-center justify-between">
             <p className="font-medium">Currículo</p>
             <span className="badge rounded-full px-2 py-1">
-              {applicationData.UserDocumentApplication.length > 0
-                ? "Preenchido"
-                : "Pendente"}
+              {applicationData.applicationFilled ? "Preenchido" : "Pendente"}
             </span>
           </div>
         </div>
