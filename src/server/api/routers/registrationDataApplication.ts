@@ -39,7 +39,7 @@ export const registrationDataApplicationRouter = createTRPCRouter({
       if (!application?.personalDataApplication) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Dados pessoais não foram informados",
+          message: "Etapa de dados pessoais não completada",
         });
       }
 

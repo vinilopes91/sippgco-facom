@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import { api } from "@/utils/api";
 import Base from "@/layout/Base";
 import ApplicationStepper from "@/components/ApplicationStepper";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   type CreateAcademicDataApplicationSchema,
@@ -16,12 +16,13 @@ import { useEffect } from "react";
 import { toast } from "react-hot-toast";
 import { handleTRPCError } from "@/utils/errors";
 import clsx from "clsx";
+import { NumberFormatBase } from "react-number-format";
 
 const AcademicData: NextPage = () => {
   const router = useRouter();
   const ctx = api.useContext();
 
-  const { register, handleSubmit, formState, setValue } =
+  const { register, handleSubmit, formState, setValue, control } =
     useForm<CreateAcademicDataApplicationSchema>({
       resolver: zodResolver(createAcademicDataApplicationSchema),
     });
@@ -176,7 +177,7 @@ const AcademicData: NextPage = () => {
                   doutorado
                 </p>
               </div>
-              <Input
+              {/* <Input
                 label="Ano ou previsão de conclusão"
                 placeholder="XXXX"
                 name="completionOrForecastYear"
@@ -185,6 +186,29 @@ const AcademicData: NextPage = () => {
                 maxLength={4}
                 error={errors.completionOrForecastYear}
                 required
+              /> */}
+              <Controller
+                control={control}
+                name="completionOrForecastYear"
+                render={({ field: { name, value } }) => (
+                  <NumberFormatBase
+                    name={name}
+                    value={value}
+                    id="completionOrForecastYear"
+                    minLength={4}
+                    maxLength={4}
+                    label="Ano ou previsão de conclusão"
+                    placeholder="XXXX"
+                    required
+                    error={errors.completionOrForecastYear}
+                    customInput={Input<CreateAcademicDataApplicationSchema>}
+                    disabled={isLoadingApplicationData}
+                    register={register}
+                    onValueChange={(values) => {
+                      setValue("completionOrForecastYear", values.value);
+                    }}
+                  />
+                )}
               />
               <Input
                 label="Instituição"

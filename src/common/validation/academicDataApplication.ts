@@ -5,7 +5,7 @@ export const createAcademicDataApplicationSchema = z.object({
   courseArea: z.string().min(1, "Campo obrigatório"),
   completionOrForecastYear: z
     .string()
-    .length(4, "Campo obrigatório")
+    .length(4, "Campo obrigatório, digite o ano completo")
     .transform((val, ctx) => {
       const parsed = parseInt(val);
       if (isNaN(parsed)) {

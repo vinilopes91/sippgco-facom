@@ -1,2 +1,1 @@
 - Verificar regra de documentos obrigatórios (marcar só como obrigatório ou não e remover por tipo de vaga, modalidade?)
-- Refatorar navegação do steper/página da etapas

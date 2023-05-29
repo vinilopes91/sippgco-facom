@@ -27,8 +27,11 @@ const Select = <T extends FieldValues>(props: SelectProps<T>) => {
 
   return (
     <div className="form-control w-full">
-      <label className="label" htmlFor={props.name}>
+      <label className="label justify-start gap-2" htmlFor={props.name}>
         <span className="label-text font-medium">{label}</span>
+        {inputProps.required && (
+          <span className="text-xs font-medium text-error">* Obrigatório</span>
+        )}
       </label>
       <select
         className={clsx("select-primary select w-full", {
