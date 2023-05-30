@@ -2,7 +2,7 @@ import { type Process, type Application } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { isAfter, isBefore } from "date-fns";
 
-export const validateApplicationRequest = (
+export const validateApplicationPeriodRequest = (
   application: (Application & { process: Process }) | null
 ) => {
   if (!application) {

@@ -4,7 +4,9 @@ import {
   updateRegistrationDataApplicationSchema,
 } from "@/common/validation/registrationDataApplication";
 import { TRPCError } from "@trpc/server";
-import { validateApplicationRequest } from "@/server/utils/validateApplicationRequest";
+import { validateApplicationPeriodRequest } from "@/server/utils/validateApplicationPeriodRequest";
+import { filterProcessStepDocuments } from "@/utils/filterDocuments";
+import { validateStepRequiredDocuments } from "@/server/utils/validateStepRequiredDocuments";
 
 export const registrationDataApplicationRouter = createTRPCRouter({
   create: protectedProcedure
@@ -15,12 +17,25 @@ export const registrationDataApplicationRouter = createTRPCRouter({
           id: input.applicationId,
         },
         include: {
-          process: true,
+          UserDocumentApplication: {
+            include: {
+              document: true,
+            },
+          },
+          process: {
+            include: {
+              ProcessDocument: {
+                include: {
+                  document: true,
+                },
+              },
+            },
+          },
           personalDataApplication: true,
         },
       });
 
-      validateApplicationRequest(application);
+      validateApplicationPeriodRequest(application);
 
       const register = await ctx.prisma.registrationDataApplication.findFirst({
         where: {
@@ -43,6 +58,32 @@ export const registrationDataApplicationRouter = createTRPCRouter({
         });
       }
 
+      const registrationDataDocuments =
+        await ctx.prisma.processDocument.findMany({
+          where: {
+            processId: application?.processId,
+            document: {
+              step: "REGISTRATION_DATA",
+              active: true,
+            },
+          },
+          include: {
+            document: true,
+          },
+        });
+
+      const userRegistrationDocuments = filterProcessStepDocuments({
+        documents: registrationDataDocuments,
+        step: "REGISTRATION_DATA",
+        modality: input.modality,
+        vacancyType: input.vacancyType,
+      });
+
+      validateStepRequiredDocuments({
+        application,
+        userDocuments: userRegistrationDocuments,
+      });
+
       return ctx.prisma.registrationDataApplication.create({
         data: {
           userId: ctx.session.user.id,
@@ -61,6 +102,8 @@ export const registrationDataApplicationRouter = createTRPCRouter({
           application: {
             include: {
               process: true,
+              UserDocumentApplication: true,
+              registrationDataApplication: true,
             },
           },
         },
@@ -73,7 +116,37 @@ export const registrationDataApplicationRouter = createTRPCRouter({
         });
       }
 
-      validateApplicationRequest(register.application);
+      validateApplicationPeriodRequest(register.application);
+
+      const registrationDataDocuments =
+        await ctx.prisma.processDocument.findMany({
+          where: {
+            processId: register.application.processId,
+            document: {
+              step: "REGISTRATION_DATA",
+              active: true,
+            },
+          },
+          include: {
+            document: true,
+          },
+        });
+
+      const userRegistrationDocuments = filterProcessStepDocuments({
+        documents: registrationDataDocuments,
+        step: "REGISTRATION_DATA",
+        modality:
+          input.modality ||
+          register.application.registrationDataApplication?.modality,
+        vacancyType:
+          input.vacancyType ||
+          register.application.registrationDataApplication?.vacancyType,
+      });
+
+      validateStepRequiredDocuments({
+        application: register.application,
+        userDocuments: userRegistrationDocuments,
+      });
 
       return ctx.prisma.registrationDataApplication.update({
         where: {

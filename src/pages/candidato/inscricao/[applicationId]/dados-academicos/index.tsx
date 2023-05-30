@@ -17,6 +17,7 @@ import { toast } from "react-hot-toast";
 import { handleTRPCError } from "@/utils/errors";
 import clsx from "clsx";
 import { NumberFormatBase } from "react-number-format";
+import { filterProcessStepDocuments } from "@/utils/filterDocuments";
 
 const AcademicData: NextPage = () => {
   const router = useRouter();
@@ -106,7 +107,14 @@ const AcademicData: NextPage = () => {
 
   const academicDataApplicationId = applicationData.academicDataApplication?.id;
 
-  const requiredDocuments = academicDataDocuments?.filter(
+  const userStepDocuments = filterProcessStepDocuments({
+    documents: academicDataDocuments,
+    modality: applicationData.registrationDataApplication?.modality,
+    vacancyType: applicationData.registrationDataApplication?.vacancyType,
+    step: "ACADEMIC_DATA",
+  });
+
+  const requiredDocuments = userStepDocuments?.filter(
     (processDocument) => processDocument.document.required
   );
 
@@ -177,16 +185,6 @@ const AcademicData: NextPage = () => {
                   doutorado
                 </p>
               </div>
-              {/* <Input
-                label="Ano ou previsão de conclusão"
-                placeholder="XXXX"
-                name="completionOrForecastYear"
-                register={register}
-                minLength={4}
-                maxLength={4}
-                error={errors.completionOrForecastYear}
-                required
-              /> */}
               <Controller
                 control={control}
                 name="completionOrForecastYear"
@@ -243,11 +241,11 @@ const AcademicData: NextPage = () => {
               </div>
             </div>
           )}
-          {academicDataDocuments && academicDataDocuments.length > 0 && (
+          {userStepDocuments && userStepDocuments.length > 0 && (
             <div className="mt-4 flex flex-col">
               <h3 className="text-lg font-medium">Documentos</h3>
               <div className="grid grid-cols-3 gap-2">
-                {academicDataDocuments.map(({ document, documentId }) => (
+                {userStepDocuments.map(({ document, documentId }) => (
                   <StepFileInput
                     key={documentId}
                     applicationData={applicationData}

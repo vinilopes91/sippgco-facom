@@ -6,6 +6,7 @@ import ApplicationStepper from "@/components/ApplicationStepper";
 import clsx from "clsx";
 import CurriculumFileInput from "@/components/CurriculumFileInput/CurriculumFileInput";
 import { handleTRPCError } from "@/utils/errors";
+import { filterProcessStepDocuments } from "@/utils/filterDocuments";
 
 const Curriculum: NextPage = () => {
   const router = useRouter();
@@ -60,7 +61,14 @@ const Curriculum: NextPage = () => {
     return <div>404</div>;
   }
 
-  const requiredDocuments = curriculumDocuments?.filter(
+  const userStepDocuments = filterProcessStepDocuments({
+    documents: curriculumDocuments,
+    modality: applicationData.registrationDataApplication?.modality,
+    vacancyType: applicationData.registrationDataApplication?.vacancyType,
+    step: "CURRICULUM",
+  });
+
+  const requiredDocuments = userStepDocuments?.filter(
     (processDocument) => processDocument.document.required
   );
 
@@ -82,7 +90,7 @@ const Curriculum: NextPage = () => {
           <ApplicationStepper currentStep={4} />
         </div>
         <div className="flex flex-col gap-4">
-          {curriculumDocuments.map(({ document, documentId }) => (
+          {userStepDocuments.map(({ document, documentId }) => (
             <CurriculumFileInput
               key={documentId}
               applicationData={applicationData}

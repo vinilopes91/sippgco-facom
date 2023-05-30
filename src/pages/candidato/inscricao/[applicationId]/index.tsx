@@ -89,6 +89,20 @@ const Inscricao: NextPage = () => {
             Visualizar inscrição
           </button>
         </div>
+        <div className="flex flex-col">
+          <p className="text-xl font-medium">
+            Período de inscrição:{" "}
+            <span className="text-base font-medium">
+              {new Date(
+                applicationData.process.applicationStartDate
+              ).toLocaleDateString()}{" "}
+              até{" "}
+              {new Date(
+                applicationData.process.applicationEndDate
+              ).toLocaleDateString()}
+            </span>
+          </p>
+        </div>
         <div className="mt-10 flex w-72 flex-col">
           <div className="flex w-full items-center justify-between">
             <p className="font-medium">Dados pessoais</p>

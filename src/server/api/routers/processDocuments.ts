@@ -23,6 +23,7 @@ export const processDocumentsRouter = createTRPCRouter({
           processId: input?.processId,
           document: {
             step: input?.step,
+            active: true,
           },
         },
         orderBy: {

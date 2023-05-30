@@ -1,5 +1,6 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
-import { validateApplicationRequest } from "@/server/utils/validateApplicationRequest";
+import { validateApplicationPeriodRequest } from "@/server/utils/validateApplicationPeriodRequest";
+import { filterProcessStepDocuments } from "@/utils/filterDocuments";
 import { TRPCError } from "@trpc/server";
 import { isAfter, isBefore } from "date-fns";
 import { z } from "zod";
@@ -126,8 +127,6 @@ export const applicationRouter = createTRPCRouter({
         });
       }
 
-      console.log("AQUI\n\n\n\n\n", ctx.session.user.id, processId);
-
       const application = await ctx.prisma.application.create({
         data: {
           userId: ctx.session.user.id,
@@ -149,14 +148,27 @@ export const applicationRouter = createTRPCRouter({
           id: input.applicationId,
         },
         include: {
-          process: true,
+          UserDocumentApplication: {
+            include: {
+              document: true,
+            },
+          },
+          process: {
+            include: {
+              ProcessDocument: {
+                include: {
+                  document: true,
+                },
+              },
+            },
+          },
           academicDataApplication: true,
           personalDataApplication: true,
           registrationDataApplication: true,
         },
       });
 
-      validateApplicationRequest(application);
+      validateApplicationPeriodRequest(application);
 
       if (
         !application?.academicDataApplication ||
@@ -166,6 +178,45 @@ export const applicationRouter = createTRPCRouter({
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "É necessário o preenchimento das etapas anteriores",
+        });
+      }
+
+      const curriculumDocuments = await ctx.prisma.processDocument.findMany({
+        where: {
+          processId: application?.processId,
+          document: {
+            step: "CURRICULUM",
+            active: true,
+          },
+        },
+        include: {
+          document: true,
+        },
+      });
+
+      const userAcademicDocuments = filterProcessStepDocuments({
+        documents: curriculumDocuments,
+        step: "CURRICULUM",
+        modality: application.registrationDataApplication.modality,
+        vacancyType: application.registrationDataApplication.vacancyType,
+      });
+
+      const requiredProcessStepDocuments = userAcademicDocuments.filter(
+        (processDocument) => processDocument.document.required
+      );
+
+      const hasRequiredDocuments = requiredProcessStepDocuments.every(
+        (requiredDocument) =>
+          !!application?.UserDocumentApplication.find(
+            (userUploadedDocument) =>
+              userUploadedDocument.documentId === requiredDocument.documentId
+          )
+      );
+
+      if (!hasRequiredDocuments) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Não foram enviados todos os documentos obrigatórios",
         });
       }
 

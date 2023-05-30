@@ -1,1 +1,2 @@
-- Verificar regra de documentos obrigatórios (marcar só como obrigatório ou não e remover por tipo de vaga, modalidade?)
+- Validar criação de documento da etapa de dados pessoais (Não deixar opção de selecionar modalidade e nem tipo de vaga)
+- Criar utilitario de validar documentos antes de salvar/criar etapa

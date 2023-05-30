@@ -77,7 +77,6 @@ const Home: NextPage = () => {
                 name="username"
                 label="Usuário"
                 placeholder="Usuário"
-                required
                 register={register}
                 error={errors.username}
               />
@@ -86,7 +85,6 @@ const Home: NextPage = () => {
                 type="password"
                 label="Senha"
                 placeholder="Senha"
-                required
                 register={register}
                 error={errors.password}
               />

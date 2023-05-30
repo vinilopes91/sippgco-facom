@@ -17,17 +17,20 @@ import { useEffect } from "react";
 import { handleTRPCError } from "@/utils/errors";
 import { toast } from "react-hot-toast";
 import clsx from "clsx";
+import { filterProcessStepDocuments } from "@/utils/filterDocuments";
 
 const RegistrationData: NextPage = () => {
   const router = useRouter();
   const ctx = api.useContext();
 
-  const { register, handleSubmit, formState, setValue } =
+  const { register, handleSubmit, formState, setValue, watch } =
     useForm<CreateRegistrationDataApplicationSchema>({
       resolver: zodResolver(createRegistrationDataApplicationSchema),
     });
 
   const { errors } = formState;
+
+  const [modalityWatch, vacancyTypeWatch] = watch(["modality", "vacancyType"]);
 
   const { data: applicationData, isLoading: isLoadingApplicationData } =
     api.application.getUserApplication.useQuery(
@@ -111,7 +114,14 @@ const RegistrationData: NextPage = () => {
   const registrationDataApplicationId =
     applicationData.registrationDataApplication?.id;
 
-  const requiredDocuments = registrationDataDocuments?.filter(
+  const userStepDocuments = filterProcessStepDocuments({
+    documents: registrationDataDocuments,
+    modality: modalityWatch,
+    vacancyType: vacancyTypeWatch,
+    step: "REGISTRATION_DATA",
+  });
+
+  const requiredDocuments = userStepDocuments?.filter(
     (processDocument) => processDocument.document.required
   );
 
@@ -253,12 +263,14 @@ const RegistrationData: NextPage = () => {
               </div>
             </div>
           )}
-          {registrationDataDocuments &&
-            registrationDataDocuments.length > 0 && (
+          {modalityWatch &&
+            vacancyTypeWatch &&
+            userStepDocuments &&
+            userStepDocuments.length > 0 && (
               <div className="mt-4 flex flex-col">
                 <h3 className="text-lg font-medium">Documentos</h3>
                 <div className="grid grid-cols-3 gap-2">
-                  {registrationDataDocuments.map(({ document, documentId }) => (
+                  {userStepDocuments.map(({ document, documentId }) => (
                     <StepFileInput
                       key={documentId}
                       applicationData={applicationData}
