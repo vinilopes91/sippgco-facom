@@ -1,2 +1,2 @@
-- Validar criação de documento da etapa de dados pessoais (Não deixar opção de selecionar modalidade e nem tipo de vaga)
-- Criar utilitario de validar documentos antes de salvar/criar etapa
+- Gerenciar processo
+- Análise de inscrição

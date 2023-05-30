@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {
   createDocumentSchema,
   type CreateDocumentSchema,
@@ -20,13 +21,29 @@ const CreateProcessDocumentModal = (
   props: Omit<BaseModalProps, "children" | "disableClickOutside">
 ) => {
   const { onClose, open } = props;
-  const { register, handleSubmit, formState, reset } =
+  const { register, handleSubmit, formState, reset, watch, setValue } =
     useForm<CreateDocumentSchema>({
       resolver: zodResolver(createDocumentSchema),
       defaultValues: {
         required: false,
       },
     });
+
+  const stepWatcher = watch("step");
+
+  useEffect(() => {
+    if (stepWatcher !== "CURRICULUM") {
+      setValue("score", undefined);
+      setValue("maximumScore", undefined);
+    }
+    if (stepWatcher === "PERSONAL_DATA") {
+      setValue("modality", Object.values(Modality));
+      setValue("vacancyType", Object.values(VacancyType));
+    } else {
+      setValue("modality", []);
+      setValue("vacancyType", []);
+    }
+  }, [stepWatcher, setValue]);
 
   const ctx = api.useContext();
 
@@ -83,6 +100,7 @@ const CreateProcessDocumentModal = (
             register={register}
             error={errors.name}
             maxLength={40}
+            required
           />
 
           <Select
@@ -106,6 +124,7 @@ const CreateProcessDocumentModal = (
             register={register}
             multiple
             required
+            disabled={stepWatcher === "PERSONAL_DATA"}
           >
             {Object.keys(Modality).map((modality) => (
               <option key={modality} value={modality}>
@@ -120,6 +139,7 @@ const CreateProcessDocumentModal = (
             register={register}
             multiple
             required
+            disabled={stepWatcher === "PERSONAL_DATA"}
           >
             {Object.keys(VacancyType).map((vacancyType) => (
               <option key={vacancyType} value={vacancyType}>
@@ -128,32 +148,36 @@ const CreateProcessDocumentModal = (
             ))}
           </Select>
 
-          <Input
-            name="score"
-            label="Pontuação por quantidade"
-            placeholder="Pontuação por quantidade"
-            register={register}
-            error={errors.score}
-            type="number"
-            registerOptions={{
-              setValueAs: (v: string) =>
-                v === "" ? undefined : parseInt(v, 10),
-            }}
-            positiveIntegerInput
-          />
-          <Input
-            name="maximumScore"
-            label="Pontuação máxima"
-            placeholder="Pontuação máxima"
-            register={register}
-            error={errors.maximumScore}
-            type="number"
-            registerOptions={{
-              setValueAs: (v: string) =>
-                v === "" ? undefined : parseInt(v, 10),
-            }}
-            positiveIntegerInput
-          />
+          {stepWatcher === "CURRICULUM" && (
+            <>
+              <Input
+                name="score"
+                label="Pontuação por quantidade"
+                placeholder="Pontuação por quantidade"
+                register={register}
+                error={errors.score}
+                type="number"
+                registerOptions={{
+                  setValueAs: (v: string) =>
+                    v === "" ? undefined : parseInt(v, 10),
+                }}
+                positiveIntegerInput
+              />
+              <Input
+                name="maximumScore"
+                label="Pontuação máxima"
+                placeholder="Pontuação máxima"
+                register={register}
+                error={errors.maximumScore}
+                type="number"
+                registerOptions={{
+                  setValueAs: (v: string) =>
+                    v === "" ? undefined : parseInt(v, 10),
+                }}
+                positiveIntegerInput
+              />
+            </>
+          )}
         </div>
         <div className="w-full">
           <TextArea

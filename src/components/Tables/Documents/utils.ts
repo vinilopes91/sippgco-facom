@@ -1,7 +1,7 @@
 import { type CreateProcessSchema } from "@/common/validation/process";
 import { type RouterOutputs } from "@/utils/api";
 import { modalityMapper, vacancyTypeMapper } from "@/utils/mapper";
-import { type Document, type Modality, type VacancyType } from "@prisma/client";
+import { Modality, type Document, VacancyType } from "@prisma/client";
 import { type Dispatch } from "react";
 import { type UseFormSetValue } from "react-hook-form";
 
@@ -53,7 +53,7 @@ export function useDocumentsTable(
 export const getModalities = (document: Document) => {
   const modalities = document.modality.split(",");
 
-  if (modalities.length === 3) return "Todas";
+  if (modalities.length === Object.keys(Modality).length) return "Todas";
 
   return modalities
     .map((modality) => modalityMapper[modality as keyof typeof Modality])
@@ -63,7 +63,7 @@ export const getModalities = (document: Document) => {
 export const getVacancyTypes = (document: Document) => {
   const vacancyTypes = document.vacancyType.split(",");
 
-  if (vacancyTypes.length === 3) return "Todas";
+  if (vacancyTypes.length === Object.keys(VacancyType).length) return "Todas";
 
   return vacancyTypes
     .map(
