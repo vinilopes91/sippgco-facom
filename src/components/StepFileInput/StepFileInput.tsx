@@ -33,7 +33,7 @@ const StepFileInput = ({
     api.userDocument.create.useMutation();
   const { mutateAsync: updateUserDocumentApplication } =
     api.userDocument.update.useMutation();
-  const { data, isLoading } =
+  const { data: preSignedUrl, isLoading } =
     api.userDocument.getUserDocumentPreSignedUrl.useQuery(
       {
         id: userDocument?.id as string,
@@ -118,7 +118,7 @@ const StepFileInput = ({
               <a
                 className="link"
                 download={`${userDocument.filename}`}
-                href={data}
+                href={preSignedUrl}
               >{`${userDocument.filename}`}</a>
             </div>
           )}

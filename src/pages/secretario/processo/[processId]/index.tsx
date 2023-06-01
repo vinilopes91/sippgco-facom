@@ -3,7 +3,7 @@ import { type NextPage } from "next";
 import Base from "@/layout/Base";
 import { api } from "@/utils/api";
 import { useRouter } from "next/router";
-import { stepMapper } from "@/utils/mapper";
+import { analysisStatusMapper, stepMapper } from "@/utils/mapper";
 import {
   getVacancyTypes,
   getModalities,
@@ -17,17 +17,34 @@ const ProcessDetail: NextPage = () => {
   const router = useRouter();
   const ctx = api.useContext();
 
+  const processId = router.query.processId as string;
+
   const { data: processData, isLoading: isLoadingProcess } =
-    api.process.get.useQuery({
-      id: router.query.processId as string,
-    });
+    api.process.get.useQuery(
+      {
+        id: processId,
+      },
+      {
+        enabled: !!processId,
+      }
+    );
+
+  const { data: processApplications, isLoading: isLoadingApplications } =
+    api.application.getProcessApplications.useQuery(
+      {
+        processId: processId,
+      },
+      {
+        enabled: !!processId,
+      }
+    );
 
   const { isLoading: isActivating, mutate: activateProcess } =
     api.process.activateProcess.useMutation({
       onSuccess: () => {
         void ctx.process.list.invalidate();
         void ctx.process.get.invalidate({
-          id: router.query.processId as string,
+          id: processId,
         });
         toast.success("Processo ativado com sucesso!");
       },
@@ -44,7 +61,7 @@ const ProcessDetail: NextPage = () => {
       onSuccess: () => {
         void ctx.process.list.invalidate();
         void ctx.process.get.invalidate({
-          id: router.query.processId as string,
+          id: processId,
         });
         toast.success("Processo finalizado com sucesso!");
         router.back();
@@ -70,7 +87,7 @@ const ProcessDetail: NextPage = () => {
   }
 
   return (
-    <Base pageTitle={processData.name} backBtn>
+    <Base pageTitle="Gerenciar processo" backBtn>
       <div className="mt-6 rounded-lg bg-white p-6 drop-shadow-sm">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold">Dados gerais</h2>
@@ -88,7 +105,7 @@ const ProcessDetail: NextPage = () => {
               Ativar processo
             </button>
           )}
-          {processData.status === "FINISHED" && (
+          {processData.status === "ACTIVE" && (
             <button
               className={clsx("btn-primary btn", isFinishing && "loading")}
               type="button"
@@ -154,6 +171,28 @@ const ProcessDetail: NextPage = () => {
               </tr>
             </thead>
             <tbody>
+              {isLoadingProcess && (
+                <>
+                  <tr>
+                    <td
+                      className="h-14 animate-pulse bg-slate-300 text-center font-medium"
+                      colSpan={3}
+                    />
+                  </tr>
+                  <tr>
+                    <td
+                      className="h-14 animate-pulse bg-slate-300 text-center font-medium"
+                      colSpan={3}
+                    />
+                  </tr>
+                  <tr>
+                    <td
+                      className="h-14 animate-pulse bg-slate-300 text-center font-medium"
+                      colSpan={3}
+                    />
+                  </tr>
+                </>
+              )}
               {processData.ProcessResearchLine.length === 0 && (
                 <tr>
                   <td className="text-center font-medium" colSpan={3}>
@@ -176,10 +215,10 @@ const ProcessDetail: NextPage = () => {
         </div>
         <h2 className="mt-3 text-2xl font-bold">Documentos</h2>
         <div className="mt-2 w-full overflow-x-auto">
-          <table className="table w-full">
+          <table className="table-zebra table w-full">
             <thead>
               <tr>
-                <th>Nome</th>
+                <th className="relative">Nome</th>
                 <th>Etapa</th>
                 <th>Modalidade</th>
                 <th>Tipo de vaga</th>
@@ -196,6 +235,28 @@ const ProcessDetail: NextPage = () => {
                   </td>
                 </tr>
               )}
+              {isLoadingProcess && (
+                <>
+                  <tr>
+                    <td
+                      className="h-14 animate-pulse bg-slate-300 text-center font-medium"
+                      colSpan={8}
+                    />
+                  </tr>
+                  <tr>
+                    <td
+                      className="h-14 animate-pulse bg-slate-300 text-center font-medium"
+                      colSpan={8}
+                    />
+                  </tr>
+                  <tr>
+                    <td
+                      className="h-14 animate-pulse bg-slate-300 text-center font-medium"
+                      colSpan={8}
+                    />
+                  </tr>
+                </>
+              )}
               {processData.ProcessDocument.map(({ document }) => (
                 <tr key={document.id}>
                   <td>{document.name}</td>
@@ -210,6 +271,74 @@ const ProcessDetail: NextPage = () => {
             </tbody>
           </table>
         </div>
+        <h2 className="mt-3 text-2xl font-bold">Inscrições</h2>
+        <div className="mt-2 w-full">
+          <table className="table w-full">
+            <thead>
+              <tr>
+                <th>Nome do candidato</th>
+                <th>Status</th>
+                <th> </th>
+              </tr>
+            </thead>
+            <tbody>
+              {processApplications?.length === 0 && (
+                <tr>
+                  <td className="text-center font-medium" colSpan={3}>
+                    Nenhuma inscrição cadastrada
+                  </td>
+                </tr>
+              )}
+              {isLoadingApplications && (
+                <>
+                  <tr>
+                    <td
+                      className="h-14 animate-pulse bg-slate-300 text-center font-medium"
+                      colSpan={3}
+                    />
+                  </tr>
+                  <tr>
+                    <td
+                      className="h-14 animate-pulse bg-slate-300 text-center font-medium"
+                      colSpan={3}
+                    />
+                  </tr>
+                  <tr>
+                    <td
+                      className="h-14 animate-pulse bg-slate-300 text-center font-medium"
+                      colSpan={3}
+                    />
+                  </tr>
+                </>
+              )}
+              {processApplications?.map(({ id, user, status }) => (
+                <tr key={id}>
+                  <td>{user.name}</td>
+                  <td>{status ? "Analisado" : "Pendente"}</td>
+                  <td>
+                    {status ? (
+                      analysisStatusMapper[status]
+                    ) : (
+                      <button
+                        className="btn-primary btn-sm btn"
+                        onClick={() =>
+                          router.push(
+                            `/secretario/processo/${processId}/inscricao/${id}`
+                          )
+                        }
+                      >
+                        Analisar
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <button className="btn-primary btn mt-6" disabled>
+          Divulgar resultado inscrições
+        </button>
       </div>
     </Base>
   );

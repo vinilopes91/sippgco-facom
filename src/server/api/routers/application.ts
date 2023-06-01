@@ -231,4 +231,73 @@ export const applicationRouter = createTRPCRouter({
 
       return applicationUpdated;
     }),
+  getProcessApplications: protectedProcedure
+    .input(
+      z.object({
+        processId: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const process = await ctx.prisma.process.findFirst({
+        where: {
+          id: input.processId,
+        },
+      });
+
+      if (!process) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Processo seletivo não encontrado",
+        });
+      }
+
+      const applications = await ctx.prisma.application.findMany({
+        where: {
+          processId: input.processId,
+          applicationFilled: true,
+        },
+        include: {
+          user: true,
+        },
+      });
+
+      return applications;
+    }),
+  get: protectedProcedure
+    .input(
+      z.object({
+        applicationId: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const application = await ctx.prisma.application.findFirst({
+        where: {
+          id: input.applicationId,
+        },
+        include: {
+          UserDocumentApplication: {
+            include: {
+              document: true,
+            },
+          },
+          personalDataApplication: true,
+          registrationDataApplication: {
+            include: {
+              researchLine: true,
+            },
+          },
+          academicDataApplication: true,
+          user: true,
+        },
+      });
+
+      if (!application) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Inscrição não encontrada",
+        });
+      }
+
+      return application;
+    }),
 });

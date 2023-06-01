@@ -12,7 +12,7 @@ const SecretarioHome: NextPage = () => {
   const [deleteProcessModal, setDeleteProcessModal] = useState(false);
   const [processSelected, setProcessSelected] = useState<Process>();
 
-  const { data } = api.process.list.useQuery();
+  const { data, isLoading } = api.process.list.useQuery();
 
   const handleClickDeleteButton = (process: Process) => {
     setProcessSelected(process);
@@ -24,6 +24,9 @@ const SecretarioHome: NextPage = () => {
       <div className="rounded-lg bg-white p-6">
         <h2 className="text-2xl font-bold">Processos seletivos</h2>
         <ul className="mt-4 list-none">
+          {isLoading && (
+            <div className="h-6 w-64 animate-pulse rounded-md bg-slate-300" />
+          )}
           {data?.length === 0 ? (
             <p>Nenhum processo cadastrado</p>
           ) : (

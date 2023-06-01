@@ -1,4 +1,10 @@
-import { Step, Modality, VacancyType, ProcessStatus } from "@prisma/client";
+import {
+  Step,
+  Modality,
+  VacancyType,
+  ProcessStatus,
+  AnalysisStatus,
+} from "@prisma/client";
 
 export const stepMapper = {
   [Step.ACADEMIC_DATA]: "Dados acadêmicos",
@@ -24,4 +30,9 @@ export const processStatusMapper = {
   [ProcessStatus.ACTIVE]: "Processo ativo",
   [ProcessStatus.DRAFT]: "Rascunho",
   [ProcessStatus.FINISHED]: "Processo finalizado",
+} as const;
+
+export const analysisStatusMapper = {
+  [AnalysisStatus.APPROVED]: "Deferida",
+  [AnalysisStatus.REJECTED]: "Indeferida",
 } as const;
