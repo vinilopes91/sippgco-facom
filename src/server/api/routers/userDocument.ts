@@ -14,6 +14,7 @@ import { randomUUID } from "crypto";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import { isAfter } from "date-fns";
 
 const BUCKET_NAME = "zeca-pagodinho";
 const UPLOADING_TIME_LIMIT = 30; // 30 seconds
@@ -141,12 +142,40 @@ export const userDocumentRouter = createTRPCRouter({
           where: {
             id: input.id,
           },
+          include: {
+            application: {
+              include: {
+                process: true,
+              },
+            },
+          },
         });
 
       if (!userDocumentApplication) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Documento não encontrado.",
+        });
+      }
+
+      if (
+        isAfter(
+          new Date(),
+          new Date(
+            userDocumentApplication.application.process.applicationEndDate
+          )
+        )
+      ) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Período de inscrição encerrado",
+        });
+      }
+
+      if (userDocumentApplication.application.status) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "A inscrição já foi analisada",
         });
       }
 

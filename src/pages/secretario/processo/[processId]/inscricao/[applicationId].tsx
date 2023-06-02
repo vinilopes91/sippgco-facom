@@ -3,6 +3,8 @@ import { type NextPage } from "next";
 import { useRouter } from "next/router";
 import FileLink from "@/components/FileLink";
 import AnalyseUserDocument from "@/components/Modals/AnalyseUserDocument";
+import AcceptApplication from "@/components/Modals/AcceptApplication";
+import RejectApplication from "@/components/Modals/RejectApplication";
 import Base from "@/layout/Base";
 import { api } from "@/utils/api";
 import { modalityMapper, vacancyTypeMapper } from "@/utils/mapper";
@@ -18,12 +20,19 @@ import {
   Step,
   type UserDocumentApplication,
 } from "@prisma/client";
+import { toast } from "react-hot-toast";
+import { isAfter, isBefore } from "date-fns";
+import { analysisStatusMapper } from "@/utils/mapper";
+import clsx from "clsx";
 
 const UserApplication: NextPage = () => {
   const [userDocumentSelected, setUserDocumentSelected] = useState<
     UserDocumentApplication & { document: Document }
   >();
-  const [openAnalysisModal, setOpenAnalysisModal] = useState(false);
+  const [openAnalysisDocumentModal, setOpenAnalysisDocumentModal] =
+    useState(false);
+  const [openApproveModal, setOpenApproveModal] = useState(false);
+  const [openRejectModal, setOpenRejectModal] = useState(false);
 
   const router = useRouter();
   const applicationId = router.query.applicationId as string;
@@ -96,13 +105,57 @@ const UserApplication: NextPage = () => {
     userDocument: UserDocumentApplication & { document: Document }
   ) => {
     setUserDocumentSelected(userDocument);
-    setOpenAnalysisModal(true);
+    setOpenAnalysisDocumentModal(true);
+  };
+
+  const allDocumentsAnalysed = application.UserDocumentApplication.every(
+    (userDocument) => !!userDocument.status
+  );
+
+  const isValidPeriod =
+    isBefore(new Date(), new Date(application.process.applicationEndDate)) &&
+    isAfter(new Date(), new Date(application.process.applicationStartDate));
+
+  const handleClickRejectButton = () => {
+    if (!allDocumentsAnalysed) {
+      toast.error("Todos os documentos devem ser analisados");
+      return;
+    }
+    if (isValidPeriod) {
+      toast.error("Período de inscrição ainda não acabou");
+      return;
+    }
+    setOpenRejectModal(true);
+  };
+
+  const handleClickAcceptButton = () => {
+    if (!allDocumentsAnalysed) {
+      toast.error("Todos os documentos devem ser analisados");
+      return;
+    }
+    if (isValidPeriod) {
+      toast.error("Período de inscrição ainda não acabou");
+      return;
+    }
+    setOpenApproveModal(true);
   };
 
   return (
     <Base pageTitle="Análise da inscrição" backBtn>
       <div className="my-6 rounded-lg bg-white p-6 drop-shadow-sm">
-        <h2 className="text-2xl font-bold">Dados do candidato</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-2xl font-bold">Dados do candidato</h2>
+          {application.status && (
+            <span
+              className={clsx("badge", {
+                "badge-success text-white": application.status === "APPROVED",
+                "badge-error text-white": application.status === "REJECTED",
+              })}
+            >
+              Inscrição {analysisStatusMapper[application.status]}
+            </span>
+          )}
+        </div>
         <div className="mt-5">
           <h3 className="text-xl font-medium">Dados pessoais</h3>
           {application.personalDataApplication && (
@@ -232,12 +285,16 @@ const UserApplication: NextPage = () => {
                           userDocument.status || undefined
                         )}
                         <FileLink userDocument={userDocument} />
-                        <button
-                          className="btn-primary btn-sm btn"
-                          onClick={() => handleClickAnalyseButton(userDocument)}
-                        >
-                          {userDocument.status ? "Mudar analise" : "Analisar"}
-                        </button>
+                        {isValidPeriod && (
+                          <button
+                            className="btn-primary btn-sm btn"
+                            onClick={() =>
+                              handleClickAnalyseButton(userDocument)
+                            }
+                          >
+                            {userDocument.status ? "Mudar analise" : "Analisar"}
+                          </button>
+                        )}
                       </div>
                     ))
                   ) : (
@@ -258,12 +315,16 @@ const UserApplication: NextPage = () => {
                           userDocument.status || undefined
                         )}
                         <FileLink userDocument={userDocument} />
-                        <button
-                          className="btn-primary btn-sm btn"
-                          onClick={() => handleClickAnalyseButton(userDocument)}
-                        >
-                          {userDocument.status ? "Mudar analise" : "Analisar"}
-                        </button>
+                        {isValidPeriod && (
+                          <button
+                            className="btn-primary btn-sm btn"
+                            onClick={() =>
+                              handleClickAnalyseButton(userDocument)
+                            }
+                          >
+                            {userDocument.status ? "Mudar analise" : "Analisar"}
+                          </button>
+                        )}
                       </div>
                     ))
                   ) : (
@@ -284,12 +345,16 @@ const UserApplication: NextPage = () => {
                           userDocument.status || undefined
                         )}
                         <FileLink userDocument={userDocument} />
-                        <button
-                          className="btn-primary btn-sm btn"
-                          onClick={() => handleClickAnalyseButton(userDocument)}
-                        >
-                          {userDocument.status ? "Mudar analise" : "Analisar"}
-                        </button>
+                        {isValidPeriod && (
+                          <button
+                            className="btn-primary btn-sm btn"
+                            onClick={() =>
+                              handleClickAnalyseButton(userDocument)
+                            }
+                          >
+                            {userDocument.status ? "Mudar analise" : "Analisar"}
+                          </button>
+                        )}
                       </div>
                     ))
                   ) : (
@@ -310,12 +375,16 @@ const UserApplication: NextPage = () => {
                           userDocument.status || undefined
                         )}
                         <FileLink userDocument={userDocument} />
-                        <button
-                          className="btn-primary btn-sm btn"
-                          onClick={() => handleClickAnalyseButton(userDocument)}
-                        >
-                          {userDocument.status ? "Mudar analise" : "Analisar"}
-                        </button>
+                        {isValidPeriod && (
+                          <button
+                            className="btn-primary btn-sm btn"
+                            onClick={() =>
+                              handleClickAnalyseButton(userDocument)
+                            }
+                          >
+                            {userDocument.status ? "Mudar analise" : "Analisar"}
+                          </button>
+                        )}
                       </div>
                     ))
                   ) : (
@@ -329,10 +398,19 @@ const UserApplication: NextPage = () => {
         {!application.status && (
           <>
             <hr className="my-5" />
-            {/* Validar se período de inscrição do processo já acabou e se todos os documentos foram validados */}
             <div className="flex w-full justify-end gap-4">
-              <button className="btn-primary btn">Rejeitar candidatura</button>
-              <button className="btn-primary btn">Deferir candidatura</button>
+              <button
+                className="btn-primary btn"
+                onClick={handleClickRejectButton}
+              >
+                Rejeitar candidatura
+              </button>
+              <button
+                className="btn-primary btn"
+                onClick={handleClickAcceptButton}
+              >
+                Deferir candidatura
+              </button>
             </div>
           </>
         )}
@@ -340,10 +418,22 @@ const UserApplication: NextPage = () => {
       {userDocumentSelected && (
         <AnalyseUserDocument
           userDocument={userDocumentSelected}
-          onClose={() => setOpenAnalysisModal(false)}
-          open={openAnalysisModal}
+          onClose={() => setOpenAnalysisDocumentModal(false)}
+          open={openAnalysisDocumentModal}
         />
       )}
+      <AcceptApplication
+        applicantName={application.user.name}
+        applicationId={application.id}
+        open={openApproveModal}
+        onClose={() => setOpenApproveModal(false)}
+      />
+      <RejectApplication
+        applicantName={application.user.name}
+        applicationId={application.id}
+        open={openRejectModal}
+        onClose={() => setOpenRejectModal(false)}
+      />
     </Base>
   );
 };

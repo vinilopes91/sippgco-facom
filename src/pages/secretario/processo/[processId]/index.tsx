@@ -347,7 +347,7 @@ const ProcessDetail: NextPage = () => {
                   <td>{status ? "Analisado" : "Pendente"}</td>
                   <td>
                     {status ? (
-                      analysisStatusMapper[status]
+                      `Inscrição ${analysisStatusMapper[status]}`
                     ) : (
                       <button
                         className="btn-primary btn-sm btn"

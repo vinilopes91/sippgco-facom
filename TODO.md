@@ -1,6 +1,3 @@
-- Endpoints de análise de inscrição
-- Análise de inscrição
-- Modal rejeita e aprovar inscrição
 - Candidato - Status inscrição
 - Candidato - Status por documento análisado
 - Candidato - Exibir descrição do documento

@@ -1,6 +1,11 @@
-import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
+import {
+  createTRPCRouter,
+  enforceUserIsAdmin,
+  protectedProcedure,
+} from "@/server/api/trpc";
 import { validateApplicationPeriodRequest } from "@/server/utils/validateApplicationPeriodRequest";
 import { filterProcessStepDocuments } from "@/utils/filterDocuments";
+import { AnalysisStatus } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { isAfter, isBefore } from "date-fns";
 import { z } from "zod";
@@ -288,6 +293,7 @@ export const applicationRouter = createTRPCRouter({
           },
           academicDataApplication: true,
           user: true,
+          process: true,
         },
       });
 
@@ -299,5 +305,89 @@ export const applicationRouter = createTRPCRouter({
       }
 
       return application;
+    }),
+  review: protectedProcedure
+    .use(enforceUserIsAdmin)
+    .input(
+      z.object({
+        id: z.string(),
+        status: z.enum([AnalysisStatus.APPROVED, AnalysisStatus.REJECTED], {
+          errorMap: (issue, ctx) => {
+            if (issue.code === z.ZodIssueCode.invalid_enum_value) {
+              return { message: "Opção inválida" };
+            }
+            return { message: ctx.defaultError };
+          },
+        }),
+        reasonForRejection: z.string().optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const application = await ctx.prisma.application.findFirst({
+        where: {
+          id: input.id,
+        },
+        include: {
+          UserDocumentApplication: {
+            include: {
+              document: true,
+            },
+          },
+          process: true,
+        },
+      });
+
+      if (!application) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Inscrição não encontrada",
+        });
+      }
+
+      if (application.process.status !== "ACTIVE") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Processo seletivo não está ativo",
+        });
+      }
+
+      if (
+        isBefore(new Date(), new Date(application.process.applicationEndDate))
+      ) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Período de inscrição ainda não encerrado",
+        });
+      }
+
+      if (application.status) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Inscrição já analisada",
+        });
+      }
+
+      if (
+        !application.UserDocumentApplication.every(
+          (userDocument) => !!userDocument.status
+        )
+      ) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Não foram analisados todos os documentos",
+        });
+      }
+
+      const updatedApplication = await ctx.prisma.application.update({
+        where: {
+          id: input.id,
+        },
+        data: {
+          status: input.status,
+          reasonForRejection: input.reasonForRejection,
+        },
+      });
+
+      return updatedApplication;
     }),
 });
