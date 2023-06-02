@@ -10,7 +10,7 @@ import {
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { ProcessStatus } from "@prisma/client";
-import { endOfDay, startOfDay } from "date-fns";
+import { endOfDay, isBefore, startOfDay } from "date-fns";
 
 export const processRouter = createTRPCRouter({
   list: protectedProcedure
@@ -172,7 +172,14 @@ export const processRouter = createTRPCRouter({
       if (process.status !== "ACTIVE") {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Process is not active",
+          message: "Processo seletivo não esta ativo",
+        });
+      }
+
+      if (!process.applicationsResultAnnounced) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "O resultado das inscrições não foram divulgado",
         });
       }
 
@@ -277,6 +284,76 @@ export const processRouter = createTRPCRouter({
               })),
             },
           },
+        },
+      });
+
+      return updatedProcess;
+    }),
+  announceProcessApplicationsResults: protectedProcedure
+    .use(enforceUserIsAdmin)
+    .input(z.object({ id: z.string().cuid() }))
+    .mutation(async ({ input, ctx }) => {
+      const process = await ctx.prisma.process.findFirst({
+        where: {
+          id: input.id,
+          active: true,
+        },
+      });
+
+      if (!process) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Processo não encontrado",
+        });
+      }
+
+      if (process.applicationsResultAnnounced) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Resultado das inscrições já foi anunciado",
+        });
+      }
+
+      if (process.status !== "ACTIVE") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Processo não esta ativo",
+        });
+      }
+
+      if (isBefore(new Date(), new Date(process.applicationEndDate))) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Período de inscrições não foi finalizado",
+        });
+      }
+
+      const processApplications = await ctx.prisma.application.findMany({
+        where: {
+          processId: input.id,
+        },
+        include: {
+          user: true,
+        },
+      });
+
+      if (
+        processApplications.some(
+          ({ status, applicationFilled }) => !status && applicationFilled
+        )
+      ) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Há inscrições finalizadas e não analisadas",
+        });
+      }
+
+      const updatedProcess = await ctx.prisma.process.update({
+        where: {
+          id: input.id,
+        },
+        data: {
+          applicationsResultAnnounced: true,
         },
       });
 

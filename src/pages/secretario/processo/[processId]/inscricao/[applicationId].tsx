@@ -1,4 +1,8 @@
+import { useState } from "react";
+import { type NextPage } from "next";
+import { useRouter } from "next/router";
 import FileLink from "@/components/FileLink";
+import AnalyseUserDocument from "@/components/Modals/AnalyseUserDocument";
 import Base from "@/layout/Base";
 import { api } from "@/utils/api";
 import { modalityMapper, vacancyTypeMapper } from "@/utils/mapper";
@@ -8,11 +12,19 @@ import {
   ExclamationCircleIcon,
   PlusCircleIcon,
 } from "@heroicons/react/24/outline";
-import { AnalysisStatus, Step } from "@prisma/client";
-import { type NextPage } from "next";
-import { useRouter } from "next/router";
+import {
+  AnalysisStatus,
+  type Document,
+  Step,
+  type UserDocumentApplication,
+} from "@prisma/client";
 
 const UserApplication: NextPage = () => {
+  const [userDocumentSelected, setUserDocumentSelected] = useState<
+    UserDocumentApplication & { document: Document }
+  >();
+  const [openAnalysisModal, setOpenAnalysisModal] = useState(false);
+
   const router = useRouter();
   const applicationId = router.query.applicationId as string;
 
@@ -78,6 +90,13 @@ const UserApplication: NextPage = () => {
       ),
     };
     return statusIcon[status];
+  };
+
+  const handleClickAnalyseButton = (
+    userDocument: UserDocumentApplication & { document: Document }
+  ) => {
+    setUserDocumentSelected(userDocument);
+    setOpenAnalysisModal(true);
   };
 
   return (
@@ -213,7 +232,10 @@ const UserApplication: NextPage = () => {
                           userDocument.status || undefined
                         )}
                         <FileLink userDocument={userDocument} />
-                        <button className="btn-primary btn-sm btn">
+                        <button
+                          className="btn-primary btn-sm btn"
+                          onClick={() => handleClickAnalyseButton(userDocument)}
+                        >
                           {userDocument.status ? "Mudar analise" : "Analisar"}
                         </button>
                       </div>
@@ -236,7 +258,10 @@ const UserApplication: NextPage = () => {
                           userDocument.status || undefined
                         )}
                         <FileLink userDocument={userDocument} />
-                        <button className="btn-primary btn-sm btn">
+                        <button
+                          className="btn-primary btn-sm btn"
+                          onClick={() => handleClickAnalyseButton(userDocument)}
+                        >
                           {userDocument.status ? "Mudar analise" : "Analisar"}
                         </button>
                       </div>
@@ -259,7 +284,10 @@ const UserApplication: NextPage = () => {
                           userDocument.status || undefined
                         )}
                         <FileLink userDocument={userDocument} />
-                        <button className="btn-primary btn-sm btn">
+                        <button
+                          className="btn-primary btn-sm btn"
+                          onClick={() => handleClickAnalyseButton(userDocument)}
+                        >
                           {userDocument.status ? "Mudar analise" : "Analisar"}
                         </button>
                       </div>
@@ -282,7 +310,10 @@ const UserApplication: NextPage = () => {
                           userDocument.status || undefined
                         )}
                         <FileLink userDocument={userDocument} />
-                        <button className="btn-primary btn-sm btn">
+                        <button
+                          className="btn-primary btn-sm btn"
+                          onClick={() => handleClickAnalyseButton(userDocument)}
+                        >
                           {userDocument.status ? "Mudar analise" : "Analisar"}
                         </button>
                       </div>
@@ -306,6 +337,13 @@ const UserApplication: NextPage = () => {
           </>
         )}
       </div>
+      {userDocumentSelected && (
+        <AnalyseUserDocument
+          userDocument={userDocumentSelected}
+          onClose={() => setOpenAnalysisModal(false)}
+          open={openAnalysisModal}
+        />
+      )}
     </Base>
   );
 };

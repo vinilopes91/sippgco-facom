@@ -1,7 +1,12 @@
-import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
+import {
+  createTRPCRouter,
+  enforceUserIsAdmin,
+  protectedProcedure,
+} from "@/server/api/trpc";
 import { s3 } from "@/server/utils/s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import {
+  analyseUserDocumentSchema,
   createUserDocumentApplication,
   updateUserDocumentApplication,
 } from "@/common/validation/userDocumentApplication";
@@ -126,5 +131,36 @@ export const userDocumentRouter = createTRPCRouter({
       });
 
       return true;
+    }),
+  analyseUserDocument: protectedProcedure
+    .use(enforceUserIsAdmin)
+    .input(analyseUserDocumentSchema)
+    .mutation(async ({ input, ctx }) => {
+      const userDocumentApplication =
+        await ctx.prisma.userDocumentApplication.findFirst({
+          where: {
+            id: input.id,
+          },
+        });
+
+      if (!userDocumentApplication) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Documento não encontrado.",
+        });
+      }
+
+      const updatedUserDocumentApplication =
+        await ctx.prisma.userDocumentApplication.update({
+          where: {
+            id: input.id,
+          },
+          data: {
+            status: input.status,
+            reasonForRejection: input.reasonForRejection,
+          },
+        });
+
+      return updatedUserDocumentApplication;
     }),
 });

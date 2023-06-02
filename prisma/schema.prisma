@@ -75,20 +75,21 @@ enum ProcessStatus {
 }
 
 model Process {
-    id                        String                @id @default(cuid())
-    name                      String
-    applicationStartDate      DateTime
-    applicationEndDate        DateTime
-    status                    ProcessStatus
-    active                    Boolean               @default(true)
-    regularMasterVacancies    Int
-    specialMasterVacancies    Int
-    regularDoctorateVacancies Int
-    Application               Application[]
-    ProcessDocument           ProcessDocument[]
-    ProcessResearchLine       ProcessResearchLine[]
-    createdAt                 DateTime              @default(now())
-    updatedAt                 DateTime              @updatedAt
+    id                          String                @id @default(cuid())
+    name                        String
+    applicationStartDate        DateTime
+    applicationEndDate          DateTime
+    status                      ProcessStatus
+    active                      Boolean               @default(true)
+    applicationsResultAnnounced Boolean               @default(false)
+    regularMasterVacancies      Int
+    specialMasterVacancies      Int
+    regularDoctorateVacancies   Int
+    Application                 Application[]
+    ProcessDocument             ProcessDocument[]
+    ProcessResearchLine         ProcessResearchLine[]
+    createdAt                   DateTime              @default(now())
+    updatedAt                   DateTime              @updatedAt
 }
 
 model Application {

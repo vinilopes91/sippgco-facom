@@ -1,4 +1,4 @@
-import { Step } from "@prisma/client";
+import { AnalysisStatus, Step } from "@prisma/client";
 import * as z from "zod";
 
 export const createUserDocumentApplication = z.object({
@@ -37,4 +37,21 @@ export const updateUserDocumentApplication = createUserDocumentApplication
 
 export type UpdateUserDocumentApplication = z.infer<
   typeof updateUserDocumentApplication
+>;
+
+export const analyseUserDocumentSchema = z.object({
+  id: z.string().cuid(),
+  status: z.enum([AnalysisStatus.APPROVED, AnalysisStatus.REJECTED], {
+    errorMap: (issue, ctx) => {
+      if (issue.code === z.ZodIssueCode.invalid_enum_value) {
+        return { message: "Opção inválida" };
+      }
+      return { message: ctx.defaultError };
+    },
+  }),
+  reasonForRejection: z.string().optional(),
+});
+
+export type AnalyseUserDocumentSchema = z.infer<
+  typeof analyseUserDocumentSchema
 >;
