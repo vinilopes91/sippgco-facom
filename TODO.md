@@ -1,3 +1,8 @@
-- Gerenciar processo
+- Gerenciar processo (Divulgar resultado inscrições)
 - Análise de inscrição
 - Modal análise documento
+- Modal rejeita e aprovar inscrição
+- Endpoints de análise de inscrição e documento
+- Candidato - Status inscrição
+- Candidato - Status por documento análisado
+- Candidato - Exibir descrição do documento

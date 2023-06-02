@@ -11,7 +11,6 @@ import {
 import { AnalysisStatus, Step } from "@prisma/client";
 import { type NextPage } from "next";
 import { useRouter } from "next/router";
-import tailwindColors from "tailwindcss/colors";
 
 const UserApplication: NextPage = () => {
   const router = useRouter();
@@ -299,6 +298,7 @@ const UserApplication: NextPage = () => {
         {!application.status && (
           <>
             <hr className="my-5" />
+            {/* Validar se período de inscrição do processo já acabou e se todos os documentos foram validados */}
             <div className="flex w-full justify-end gap-4">
               <button className="btn-primary btn">Rejeitar candidatura</button>
               <button className="btn-primary btn">Deferir candidatura</button>
