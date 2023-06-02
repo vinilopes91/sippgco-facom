@@ -135,11 +135,23 @@ const Inscricao: NextPage = () => {
             </span>
           </div>
         </div>
-        <div className="mt-10">
-          <span className="font-medium">Status inscrição: </span>
-          {applicationData.status
-            ? `Inscrição ${applicationStatus[applicationData.status]}`
-            : "Inscrição em andamento"}
+        <div className="mt-10 flex flex-col">
+          <p className="font-medium">
+            Status inscrição:
+            <span className="font-normal">
+              {applicationData.status
+                ? ` Inscrição ${applicationStatus[applicationData.status]}`
+                : " Inscrição em andamento"}
+            </span>
+          </p>
+          {applicationData.reasonForRejection && (
+            <p className="font-medium">
+              Motivo da rejeição:{" "}
+              <span className="font-normal">
+                {applicationData.reasonForRejection}
+              </span>
+            </p>
+          )}
         </div>
       </div>
     </Base>

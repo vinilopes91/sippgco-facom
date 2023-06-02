@@ -21,8 +21,8 @@ import {
   type UserDocumentApplication,
 } from "@prisma/client";
 import { toast } from "react-hot-toast";
-import { isAfter, isBefore } from "date-fns";
 import { analysisStatusMapper } from "@/utils/mapper";
+import { isValidPeriod } from "@/utils/application";
 import clsx from "clsx";
 
 const UserApplication: NextPage = () => {
@@ -112,16 +112,17 @@ const UserApplication: NextPage = () => {
     (userDocument) => !!userDocument.status
   );
 
-  const isValidPeriod =
-    isBefore(new Date(), new Date(application.process.applicationEndDate)) &&
-    isAfter(new Date(), new Date(application.process.applicationStartDate));
+  const isValidApplicationPeriod = isValidPeriod({
+    applicationEndDate: application.process.applicationEndDate,
+    applicationStartDate: application.process.applicationStartDate,
+  });
 
   const handleClickRejectButton = () => {
     if (!allDocumentsAnalysed) {
       toast.error("Todos os documentos devem ser analisados");
       return;
     }
-    if (isValidPeriod) {
+    if (isValidApplicationPeriod) {
       toast.error("Período de inscrição ainda não acabou");
       return;
     }
@@ -133,7 +134,7 @@ const UserApplication: NextPage = () => {
       toast.error("Todos os documentos devem ser analisados");
       return;
     }
-    if (isValidPeriod) {
+    if (isValidApplicationPeriod) {
       toast.error("Período de inscrição ainda não acabou");
       return;
     }
@@ -285,7 +286,7 @@ const UserApplication: NextPage = () => {
                           userDocument.status || undefined
                         )}
                         <FileLink userDocument={userDocument} />
-                        {isValidPeriod && (
+                        {isValidApplicationPeriod && (
                           <button
                             className="btn-primary btn-sm btn"
                             onClick={() =>
@@ -315,7 +316,7 @@ const UserApplication: NextPage = () => {
                           userDocument.status || undefined
                         )}
                         <FileLink userDocument={userDocument} />
-                        {isValidPeriod && (
+                        {isValidApplicationPeriod && (
                           <button
                             className="btn-primary btn-sm btn"
                             onClick={() =>
@@ -345,7 +346,7 @@ const UserApplication: NextPage = () => {
                           userDocument.status || undefined
                         )}
                         <FileLink userDocument={userDocument} />
-                        {isValidPeriod && (
+                        {isValidApplicationPeriod && (
                           <button
                             className="btn-primary btn-sm btn"
                             onClick={() =>
@@ -375,7 +376,7 @@ const UserApplication: NextPage = () => {
                           userDocument.status || undefined
                         )}
                         <FileLink userDocument={userDocument} />
-                        {isValidPeriod && (
+                        {isValidApplicationPeriod && (
                           <button
                             className="btn-primary btn-sm btn"
                             onClick={() =>

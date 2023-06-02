@@ -1,6 +1,6 @@
+import { isValidPeriod } from "@/utils/application";
 import { type Process, type Application } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
-import { isAfter, isBefore } from "date-fns";
 
 export const validateApplicationPeriodRequest = (
   application: (Application & { process: Process }) | null
@@ -14,9 +14,10 @@ export const validateApplicationPeriodRequest = (
 
   const { applicationStartDate, applicationEndDate } = application.process;
 
-  const isValidDate =
-    isBefore(new Date(), new Date(applicationEndDate)) &&
-    isAfter(new Date(), new Date(applicationStartDate));
+  const isValidDate = isValidPeriod({
+    applicationStartDate,
+    applicationEndDate,
+  });
 
   if (!isValidDate) {
     throw new TRPCError({

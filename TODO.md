@@ -1,3 +1,3 @@
-- Candidato - Status inscrição
+- Candidato - Não deixar enviar arquivos, criar, salvar etapas fora do período da inscrição
 - Candidato - Status por documento análisado
 - Candidato - Exibir descrição do documento

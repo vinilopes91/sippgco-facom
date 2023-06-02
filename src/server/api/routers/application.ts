@@ -3,11 +3,12 @@ import {
   enforceUserIsAdmin,
   protectedProcedure,
 } from "@/server/api/trpc";
+import { isValidPeriod } from "@/utils/application";
 import { validateApplicationPeriodRequest } from "@/server/utils/validateApplicationPeriodRequest";
 import { filterProcessStepDocuments } from "@/utils/filterDocuments";
 import { AnalysisStatus } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
-import { isAfter, isBefore } from "date-fns";
+import { isBefore } from "date-fns";
 import { z } from "zod";
 
 export const applicationRouter = createTRPCRouter({
@@ -100,11 +101,12 @@ export const applicationRouter = createTRPCRouter({
 
       const { applicationStartDate, applicationEndDate } = process;
 
-      const isValidPeriod =
-        isBefore(new Date(), new Date(applicationEndDate)) &&
-        isAfter(new Date(), new Date(applicationStartDate));
+      const isValidApplicationPeriod = isValidPeriod({
+        applicationStartDate,
+        applicationEndDate,
+      });
 
-      if (!isValidPeriod) {
+      if (!isValidApplicationPeriod) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Período de inscrição encerrado",
