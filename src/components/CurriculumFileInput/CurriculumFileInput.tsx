@@ -9,6 +9,7 @@ import ControlledInput from "../ControlledInput";
 import { NumberFormatBase } from "react-number-format";
 import clsx from "clsx";
 import { TrashIcon } from "@heroicons/react/24/outline";
+import { isValidPeriod } from "@/utils/application";
 
 const CurriculumFileInput = ({
   document,
@@ -37,7 +38,9 @@ const CurriculumFileInput = ({
   const { mutate: deleteUserDocument, isLoading: isDeleting } =
     api.userDocument.delete.useMutation({
       onSuccess: () => {
-        void ctx.application.invalidate();
+        void ctx.application.getUserApplication.invalidate({
+          applicationId: router.query.applicationId as string,
+        });
         setQuantity(undefined);
       },
       onError: (e) => {
@@ -62,6 +65,11 @@ const CurriculumFileInput = ({
         enabled: isUploaded,
       }
     );
+
+  const isValidApplicationPeriod = isValidPeriod({
+    applicationStartDate: applicationData.process.applicationStartDate,
+    applicationEndDate: applicationData.process.applicationEndDate,
+  });
 
   const handleClickSaveButton = async () => {
     if (!userDocument?.id) return;
@@ -159,7 +167,7 @@ const CurriculumFileInput = ({
           showRequiredMessage={document.required}
           label={`${document.name} (Máx: ${document.maximumScore!})`}
           accept="application/pdf"
-          disabled={isUploading}
+          disabled={!isValidApplicationPeriod || isUploading}
           onChange={onFileChange}
           required={!isUploaded && document.required}
           ref={fileInputRef}
@@ -173,6 +181,7 @@ const CurriculumFileInput = ({
           }}
           customInput={ControlledInput}
           value={quantity || ""}
+          disabled={!isValidApplicationPeriod}
         />
         <ControlledInput
           name="documentScore"
@@ -187,7 +196,7 @@ const CurriculumFileInput = ({
             "btn-primary btn",
             isUpdatingUserDocument && "loading"
           )}
-          disabled={disableSaveButton}
+          disabled={!isValidApplicationPeriod || disableSaveButton}
           onClick={handleClickSaveButton}
         >
           Salvar
@@ -208,12 +217,20 @@ const CurriculumFileInput = ({
                 <button
                   className={clsx(
                     "btn-ghost btn h-auto min-h-fit p-1",
-                    isDeleting && "loading"
+                    isDeleting && "loading",
+                    !isValidApplicationPeriod && "btn-disabled"
                   )}
-                  disabled={isDeleting}
+                  disabled={!isValidApplicationPeriod || isDeleting}
                   onClick={handleClickDeleteButton}
                 >
-                  <TrashIcon width={20} stroke="red" />
+                  <TrashIcon
+                    width={20}
+                    className={clsx(
+                      isValidApplicationPeriod
+                        ? "stroke-error"
+                        : "stroke-gray-600"
+                    )}
+                  />
                 </button>
               )}
             </div>

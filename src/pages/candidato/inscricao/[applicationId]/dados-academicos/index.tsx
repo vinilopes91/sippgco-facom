@@ -18,6 +18,7 @@ import { handleTRPCError } from "@/utils/errors";
 import clsx from "clsx";
 import { NumberFormatBase } from "react-number-format";
 import { filterProcessStepDocuments } from "@/utils/filterDocuments";
+import { isValidPeriod } from "@/utils/application";
 
 const AcademicData: NextPage = () => {
   const router = useRouter();
@@ -37,6 +38,8 @@ const AcademicData: NextPage = () => {
       },
       {
         enabled: !!router.query.applicationId,
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
       }
     );
 
@@ -147,8 +150,15 @@ const AcademicData: NextPage = () => {
         handleTRPCError(error, "Erro ao registrar dados acadêmicos.");
       }
     }
-    void ctx.application.invalidate();
+    void ctx.application.getUserApplication.invalidate({
+      applicationId: router.query.applicationId as string,
+    });
   };
+
+  const isValidApplicationPeriod = isValidPeriod({
+    applicationStartDate: applicationData.process.applicationStartDate,
+    applicationEndDate: applicationData.process.applicationEndDate,
+  });
 
   return (
     <Base
@@ -178,6 +188,7 @@ const AcademicData: NextPage = () => {
                   name="courseArea"
                   register={register}
                   error={errors.courseArea}
+                  disabled={!isValidApplicationPeriod}
                   required
                 />
                 <p className="mt-1 text-xs">
@@ -200,7 +211,9 @@ const AcademicData: NextPage = () => {
                     required
                     error={errors.completionOrForecastYear}
                     customInput={Input<CreateAcademicDataApplicationSchema>}
-                    disabled={isLoadingApplicationData}
+                    disabled={
+                      !isValidApplicationPeriod || isLoadingApplicationData
+                    }
                     register={register}
                     onValueChange={(values) => {
                       setValue("completionOrForecastYear", values.value);
@@ -215,6 +228,7 @@ const AcademicData: NextPage = () => {
                 register={register}
                 error={errors.institution}
                 required
+                disabled={!isValidApplicationPeriod}
               />
             </div>
             <div className="mt-2 flex items-center gap-2">
@@ -222,6 +236,7 @@ const AcademicData: NextPage = () => {
                 className="checkbox"
                 type="checkbox"
                 id="wasSpecialStudent"
+                disabled={!isValidApplicationPeriod}
                 {...register("wasSpecialStudent")}
               />
               <label htmlFor="wasSpecialStudent">
@@ -263,7 +278,9 @@ const AcademicData: NextPage = () => {
                   "btn-primary btn w-36",
                   updatingAcademicDataApplication && "loading"
                 )}
-                disabled={updatingAcademicDataApplication}
+                disabled={
+                  !isValidApplicationPeriod || updatingAcademicDataApplication
+                }
                 type="submit"
               >
                 Salvar
@@ -274,13 +291,20 @@ const AcademicData: NextPage = () => {
                   "btn-primary btn w-36",
                   creatingAcademicDataApplication && "loading"
                 )}
-                disabled={creatingAcademicDataApplication}
+                disabled={
+                  !isValidApplicationPeriod || creatingAcademicDataApplication
+                }
                 type="submit"
               >
                 Avançar
               </button>
             )}
           </div>
+          {!isValidApplicationPeriod && (
+            <p className="text-right text-sm text-red-500">
+              * Período de inscrição encerrado
+            </p>
+          )}
         </form>
       </div>
     </Base>

@@ -7,6 +7,7 @@ import clsx from "clsx";
 import CurriculumFileInput from "@/components/CurriculumFileInput/CurriculumFileInput";
 import { handleTRPCError } from "@/utils/errors";
 import { filterProcessStepDocuments } from "@/utils/filterDocuments";
+import { isValidPeriod } from "@/utils/application";
 
 const Curriculum: NextPage = () => {
   const router = useRouter();
@@ -19,6 +20,8 @@ const Curriculum: NextPage = () => {
       },
       {
         enabled: !!router.query.applicationId,
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
       }
     );
 
@@ -72,6 +75,11 @@ const Curriculum: NextPage = () => {
     (processDocument) => processDocument.document.required
   );
 
+  const isValidApplicationPeriod = isValidPeriod({
+    applicationStartDate: applicationData.process.applicationStartDate,
+    applicationEndDate: applicationData.process.applicationEndDate,
+  });
+
   return (
     <Base
       pageTitle="Minhas candidaturas"
@@ -105,7 +113,11 @@ const Curriculum: NextPage = () => {
               "btn-primary btn w-36",
               isFinishingApplication && "loading"
             )}
-            disabled={requiredDocuments.length > 0 || isFinishingApplication}
+            disabled={
+              requiredDocuments.length > 0 ||
+              isFinishingApplication ||
+              !isValidApplicationPeriod
+            }
             type="button"
             onClick={() =>
               finishApplication({ applicationId: applicationData.id })
@@ -114,6 +126,11 @@ const Curriculum: NextPage = () => {
             Concluir
           </button>
         </div>
+        {!isValidApplicationPeriod && (
+          <p className="mt-5 text-right text-sm text-red-500">
+            * Período de inscrição encerrado
+          </p>
+        )}
       </div>
     </Base>
   );

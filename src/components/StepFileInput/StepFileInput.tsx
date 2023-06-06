@@ -5,6 +5,7 @@ import FileInput from "../FileInput";
 import { useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import { handleTRPCError } from "@/utils/errors";
+import { isValidPeriod } from "@/utils/application";
 
 const StepFileInput = ({
   document,
@@ -42,6 +43,11 @@ const StepFileInput = ({
         enabled: isUploaded,
       }
     );
+
+  const isValidApplicationPeriod = isValidPeriod({
+    applicationStartDate: applicationData.process.applicationStartDate,
+    applicationEndDate: applicationData.process.applicationEndDate,
+  });
 
   const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.length === 0) {
@@ -104,7 +110,7 @@ const StepFileInput = ({
         showRequiredMessage={document.required}
         label={document.name}
         accept="application/pdf"
-        disabled={isUploading}
+        disabled={!isValidApplicationPeriod || isUploading}
         onChange={onFileChange}
         required={!isUploaded && document.required}
         ref={fileInputRef}

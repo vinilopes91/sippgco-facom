@@ -18,6 +18,7 @@ import { handleTRPCError } from "@/utils/errors";
 import { toast } from "react-hot-toast";
 import clsx from "clsx";
 import { filterProcessStepDocuments } from "@/utils/filterDocuments";
+import { isValidPeriod } from "@/utils/application";
 
 const RegistrationData: NextPage = () => {
   const router = useRouter();
@@ -39,6 +40,8 @@ const RegistrationData: NextPage = () => {
       },
       {
         enabled: !!router.query.applicationId,
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
       }
     );
 
@@ -58,13 +61,22 @@ const RegistrationData: NextPage = () => {
   const {
     mutateAsync: createRegistrationDataApplication,
     isLoading: creatingRegistrationDataApplication,
-  } = api.registrationDataApplication.create.useMutation();
+  } = api.registrationDataApplication.create.useMutation({
+    onSuccess: () => {
+      void ctx.application.getUserApplication.invalidate({
+        applicationId: router.query.applicationId as string,
+      });
+    },
+  });
   const {
     mutate: updateRegistrationDataApplication,
     isLoading: updatingRegistrationDataApplication,
   } = api.registrationDataApplication.update.useMutation({
     onSuccess: () => {
       toast.success("Dados da inscrição salvos com sucesso.");
+      void ctx.application.getUserApplication.invalidate({
+        applicationId: router.query.applicationId as string,
+      });
     },
     onError: (error) => {
       handleTRPCError(error, "Erro ao salvar dados da inscrição.");
@@ -154,8 +166,12 @@ const RegistrationData: NextPage = () => {
         handleTRPCError(error, "Erro ao registrar dados da inscrição");
       }
     }
-    void ctx.application.invalidate();
   };
+
+  const isValidApplicationPeriod = isValidPeriod({
+    applicationStartDate: applicationData.process.applicationStartDate,
+    applicationEndDate: applicationData.process.applicationEndDate,
+  });
 
   return (
     <Base
@@ -186,6 +202,7 @@ const RegistrationData: NextPage = () => {
                 register={register}
                 error={errors.vacancyType}
                 required
+                disabled={!isValidApplicationPeriod}
               >
                 <option value="">Selecione</option>
                 {Object.keys(VacancyType).map((type) => (
@@ -201,6 +218,7 @@ const RegistrationData: NextPage = () => {
                 register={register}
                 error={errors.modality}
                 required
+                disabled={!isValidApplicationPeriod}
               >
                 <option value="">Selecione</option>
                 {Object.keys(Modality).map((modality) => (
@@ -216,6 +234,7 @@ const RegistrationData: NextPage = () => {
                 register={register}
                 error={errors.researchLineId}
                 required
+                disabled={!isValidApplicationPeriod}
               >
                 <option value="">Selecione</option>
                 {applicationData.process.ProcessResearchLine.map(
@@ -232,6 +251,7 @@ const RegistrationData: NextPage = () => {
                 className="checkbox"
                 type="checkbox"
                 id="specialStudent"
+                disabled={!isValidApplicationPeriod}
                 {...register("specialStudent")}
               />
               <label htmlFor="specialStudent">
@@ -245,6 +265,7 @@ const RegistrationData: NextPage = () => {
                 className="checkbox"
                 type="checkbox"
                 id="scholarship"
+                disabled={!isValidApplicationPeriod}
                 {...register("scholarship")}
               />
               <label htmlFor="scholarship">
@@ -288,7 +309,10 @@ const RegistrationData: NextPage = () => {
                   "btn-primary btn w-36",
                   updatingRegistrationDataApplication && "loading"
                 )}
-                disabled={updatingRegistrationDataApplication}
+                disabled={
+                  !isValidApplicationPeriod ||
+                  updatingRegistrationDataApplication
+                }
                 type="submit"
               >
                 Salvar
@@ -299,13 +323,21 @@ const RegistrationData: NextPage = () => {
                   "btn-primary btn w-36",
                   creatingRegistrationDataApplication && "loading"
                 )}
-                disabled={creatingRegistrationDataApplication}
+                disabled={
+                  !isValidApplicationPeriod ||
+                  creatingRegistrationDataApplication
+                }
                 type="submit"
               >
                 Avançar
               </button>
             )}
           </div>
+          {!isValidApplicationPeriod && (
+            <p className="text-right text-sm text-red-500">
+              * Período de inscrição encerrado
+            </p>
+          )}
         </form>
       </div>
     </Base>

@@ -18,6 +18,7 @@ import { maskPhoneNumber } from "@/utils/mask";
 import clsx from "clsx";
 import { handleTRPCError } from "@/utils/errors";
 import ControlledInput from "@/components/ControlledInput";
+import { isValidPeriod } from "@/utils/application";
 
 const PersonalData: NextPage = () => {
   const router = useRouter();
@@ -38,6 +39,8 @@ const PersonalData: NextPage = () => {
       },
       {
         enabled: !!router.query.applicationId,
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
       }
     );
 
@@ -130,8 +133,15 @@ const PersonalData: NextPage = () => {
         handleTRPCError(error, "Erro ao registrar dados pessoais");
       }
     }
-    void ctx.application.invalidate();
+    void ctx.application.getUserApplication.invalidate({
+      applicationId: router.query.applicationId as string,
+    });
   };
+
+  const isValidApplicationPeriod = isValidPeriod({
+    applicationStartDate: applicationData.process.applicationStartDate,
+    applicationEndDate: applicationData.process.applicationEndDate,
+  });
 
   return (
     <Base
@@ -184,7 +194,9 @@ const PersonalData: NextPage = () => {
                     valueIsNumericString
                     errorMessage={errors.phone?.message}
                     customInput={ControlledInput}
-                    disabled={isLoadingApplicationData}
+                    disabled={
+                      !isValidApplicationPeriod || isLoadingApplicationData
+                    }
                     onValueChange={(values) => {
                       setValue("phone", values.value);
                     }}
@@ -226,7 +238,9 @@ const PersonalData: NextPage = () => {
                   "btn-primary btn w-36",
                   updatingPersonalDataApplication && "loading"
                 )}
-                disabled={updatingPersonalDataApplication}
+                disabled={
+                  !isValidApplicationPeriod || updatingPersonalDataApplication
+                }
                 type="submit"
               >
                 Salvar
@@ -237,13 +251,20 @@ const PersonalData: NextPage = () => {
                   "btn-primary btn w-36",
                   creatingPersonalDataApplication && "loading"
                 )}
-                disabled={creatingPersonalDataApplication}
+                disabled={
+                  !isValidApplicationPeriod || creatingPersonalDataApplication
+                }
                 type="submit"
               >
                 Avançar
               </button>
             )}
           </div>
+          {!isValidApplicationPeriod && (
+            <p className="text-right text-sm text-red-500">
+              * Período de inscrição encerrado
+            </p>
+          )}
         </form>
       </div>
     </Base>
