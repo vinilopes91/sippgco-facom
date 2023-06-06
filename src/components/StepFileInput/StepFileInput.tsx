@@ -1,11 +1,17 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { api, type RouterOutputs } from "@/utils/api";
-import { type Document } from "@prisma/client";
+import { AnalysisStatus, type Document } from "@prisma/client";
 import FileInput from "../FileInput";
 import { useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import { handleTRPCError } from "@/utils/errors";
 import { isValidPeriod } from "@/utils/application";
+import { documentAnalysisStatusMapper } from "@/utils/mapper";
+import {
+  CheckCircleIcon,
+  ExclamationCircleIcon,
+  PlusCircleIcon,
+} from "@heroicons/react/24/outline";
 
 const StepFileInput = ({
   document,
@@ -104,6 +110,35 @@ const StepFileInput = ({
     setIsUploading(false);
   };
 
+  const getDocumentStatusIcon = (status?: AnalysisStatus) => {
+    if (!status) {
+      return (
+        <ExclamationCircleIcon
+          width={20}
+          className="stroke-warning"
+          title="Pendente"
+        />
+      );
+    }
+    const statusIcon = {
+      [AnalysisStatus.APPROVED]: (
+        <CheckCircleIcon
+          width={20}
+          className="stroke-success"
+          title="Aprovado"
+        />
+      ),
+      [AnalysisStatus.REJECTED]: (
+        <PlusCircleIcon
+          width={20}
+          className="rotate-45 stroke-error"
+          title="Rejeitado"
+        />
+      ),
+    };
+    return statusIcon[status];
+  };
+
   return (
     <div className="loading flex flex-col gap-2" key={documentId}>
       <FileInput
@@ -115,17 +150,32 @@ const StepFileInput = ({
         required={!isUploaded && document.required}
         ref={fileInputRef}
       />
+      {document.description && (
+        <p>
+          <span className="font-medium">Descrição</span>: {document.description}
+        </p>
+      )}
       {isUploaded && (
         <>
           {isLoading ? (
             <div className="h-6 w-full animate-pulse" />
           ) : (
-            <div className="flex w-full items-center gap-4">
+            <div className="flex w-full flex-col">
               <a
-                className="link"
+                className="link w-fit"
                 download={`${userDocument.filename}`}
                 href={preSignedUrl}
               >{`${userDocument.filename}`}</a>
+              {userDocument.status && (
+                <div className="flex items-center gap-1">
+                  {getDocumentStatusIcon(userDocument.status)}
+                  <p className="text-sm">
+                    {documentAnalysisStatusMapper[userDocument.status]}.{" "}
+                    {userDocument.reasonForRejection &&
+                      `Motivo: ${userDocument.reasonForRejection}`}
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </>

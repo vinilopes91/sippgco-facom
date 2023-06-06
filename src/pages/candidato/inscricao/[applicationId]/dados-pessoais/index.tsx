@@ -69,13 +69,22 @@ const PersonalData: NextPage = () => {
   const {
     mutateAsync: createPersonalDataApplication,
     isLoading: creatingPersonalDataApplication,
-  } = api.personalDataApplication.create.useMutation();
+  } = api.personalDataApplication.create.useMutation({
+    onSuccess: () => {
+      void ctx.application.getUserApplication.invalidate({
+        applicationId: router.query.applicationId as string,
+      });
+    },
+  });
   const {
     mutate: updatePersonalDataApplication,
     isLoading: updatingPersonalDataApplication,
   } = api.personalDataApplication.update.useMutation({
     onSuccess: () => {
       toast.success("Dados pessoais salvos com sucesso.");
+      void ctx.application.getUserApplication.invalidate({
+        applicationId: router.query.applicationId as string,
+      });
     },
     onError: (error) => {
       handleTRPCError(error, "Erro ao salvar dados pessoais.");
@@ -133,9 +142,6 @@ const PersonalData: NextPage = () => {
         handleTRPCError(error, "Erro ao registrar dados pessoais");
       }
     }
-    void ctx.application.getUserApplication.invalidate({
-      applicationId: router.query.applicationId as string,
-    });
   };
 
   const isValidApplicationPeriod = isValidPeriod({

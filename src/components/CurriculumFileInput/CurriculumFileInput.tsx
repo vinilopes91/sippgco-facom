@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { api, type RouterOutputs } from "@/utils/api";
-import { type Document } from "@prisma/client";
+import { AnalysisStatus, type Document } from "@prisma/client";
 import FileInput from "../FileInput";
 import { useRef, useState } from "react";
 import { toast } from "react-hot-toast";
@@ -8,8 +8,14 @@ import { handleTRPCError } from "@/utils/errors";
 import ControlledInput from "../ControlledInput";
 import { NumberFormatBase } from "react-number-format";
 import clsx from "clsx";
-import { TrashIcon } from "@heroicons/react/24/outline";
+import {
+  CheckCircleIcon,
+  ExclamationCircleIcon,
+  PlusCircleIcon,
+  TrashIcon,
+} from "@heroicons/react/24/outline";
 import { isValidPeriod } from "@/utils/application";
+import { documentAnalysisStatusMapper } from "@/utils/mapper";
 
 const CurriculumFileInput = ({
   document,
@@ -154,6 +160,35 @@ const CurriculumFileInput = ({
     await ctx.application.invalidate();
   };
 
+  const getDocumentStatusIcon = (status?: AnalysisStatus) => {
+    if (!status) {
+      return (
+        <ExclamationCircleIcon
+          width={20}
+          className="stroke-warning"
+          title="Pendente"
+        />
+      );
+    }
+    const statusIcon = {
+      [AnalysisStatus.APPROVED]: (
+        <CheckCircleIcon
+          width={20}
+          className="stroke-success"
+          title="Aprovado"
+        />
+      ),
+      [AnalysisStatus.REJECTED]: (
+        <PlusCircleIcon
+          width={20}
+          className="rotate-45 stroke-error"
+          title="Rejeitado"
+        />
+      ),
+    };
+    return statusIcon[status];
+  };
+
   const disableSaveButton =
     isUpdatingUserDocument ||
     !quantity ||
@@ -202,36 +237,56 @@ const CurriculumFileInput = ({
           Salvar
         </button>
       </div>
+      {document.description && (
+        <p>
+          <span className="font-medium">Descrição</span>: {document.description}
+        </p>
+      )}
       {isUploaded && (
         <>
           {isLoading ? (
             <div className="h-6 w-full animate-pulse" />
           ) : (
-            <div className="flex w-full items-center gap-4">
-              <a
-                className="link"
-                download={`${userDocument.filename}`}
-                href={data}
-              >{`${userDocument.filename}`}</a>
-              {userDocument.key && (
-                <button
-                  className={clsx(
-                    "btn-ghost btn h-auto min-h-fit p-1",
-                    isDeleting && "loading",
-                    !isValidApplicationPeriod && "btn-disabled"
-                  )}
-                  disabled={!isValidApplicationPeriod || isDeleting}
-                  onClick={handleClickDeleteButton}
+            <div className="flex w-full flex-col">
+              <div>
+                <a
+                  className="link w-fit"
+                  download={`${userDocument.filename}`}
+                  href={data}
                 >
-                  <TrashIcon
-                    width={20}
+                  {`${userDocument.filename}`}
+                </a>
+                {userDocument.key && (
+                  <button
                     className={clsx(
-                      isValidApplicationPeriod
-                        ? "stroke-error"
-                        : "stroke-gray-600"
+                      "btn-ghost btn h-auto min-h-fit p-1",
+                      isDeleting && "loading",
+                      !isValidApplicationPeriod && "btn-disabled",
+                      "ml-2"
                     )}
-                  />
-                </button>
+                    disabled={!isValidApplicationPeriod || isDeleting}
+                    onClick={handleClickDeleteButton}
+                  >
+                    <TrashIcon
+                      width={20}
+                      className={clsx(
+                        isValidApplicationPeriod
+                          ? "stroke-error"
+                          : "stroke-gray-600"
+                      )}
+                    />
+                  </button>
+                )}
+              </div>
+              {userDocument.status && (
+                <div className="flex items-center gap-1">
+                  {getDocumentStatusIcon(userDocument.status)}
+                  <p className="text-sm">
+                    {documentAnalysisStatusMapper[userDocument.status]}.{" "}
+                    {userDocument.reasonForRejection &&
+                      `Motivo: ${userDocument.reasonForRejection}`}
+                  </p>
+                </div>
               )}
             </div>
           )}

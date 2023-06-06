@@ -1,2 +1,0 @@
-- Candidato - Status por documento análisado
-- Candidato - Exibir descrição do documento

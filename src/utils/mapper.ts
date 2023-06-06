@@ -36,3 +36,8 @@ export const analysisStatusMapper = {
   [AnalysisStatus.APPROVED]: "Deferida",
   [AnalysisStatus.REJECTED]: "Indeferida",
 } as const;
+
+export const documentAnalysisStatusMapper = {
+  [AnalysisStatus.APPROVED]: "Documento aceito",
+  [AnalysisStatus.REJECTED]: "Documento rejeitado",
+} as const;

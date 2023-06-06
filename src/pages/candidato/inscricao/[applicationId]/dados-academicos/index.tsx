@@ -83,13 +83,22 @@ const AcademicData: NextPage = () => {
   const {
     mutateAsync: createAcademicDataApplication,
     isLoading: creatingAcademicDataApplication,
-  } = api.academicDataApplication.create.useMutation();
+  } = api.academicDataApplication.create.useMutation({
+    onSuccess: () => {
+      void ctx.application.getUserApplication.invalidate({
+        applicationId: router.query.applicationId as string,
+      });
+    },
+  });
   const {
     mutate: updateAcademicDataApplication,
     isLoading: updatingAcademicDataApplication,
   } = api.academicDataApplication.update.useMutation({
     onSuccess: () => {
       toast.success("Dados pessoais salvos com sucesso.");
+      void ctx.application.getUserApplication.invalidate({
+        applicationId: router.query.applicationId as string,
+      });
     },
     onError: (error) => {
       handleTRPCError(error, "Erro ao salvar dados acadêmicos.");
@@ -150,9 +159,6 @@ const AcademicData: NextPage = () => {
         handleTRPCError(error, "Erro ao registrar dados acadêmicos.");
       }
     }
-    void ctx.application.getUserApplication.invalidate({
-      applicationId: router.query.applicationId as string,
-    });
   };
 
   const isValidApplicationPeriod = isValidPeriod({
