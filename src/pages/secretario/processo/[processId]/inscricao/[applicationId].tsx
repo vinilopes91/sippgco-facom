@@ -278,25 +278,39 @@ const UserApplication: NextPage = () => {
                 <div className="mt-2 flex flex-col gap-2">
                   {personalDataDocuments.length > 0 ? (
                     personalDataDocuments.map((userDocument) => (
-                      <div
-                        className="flex items-center gap-2"
-                        key={userDocument.id}
-                      >
-                        {getDocumentStatusIcon(
-                          userDocument.status || undefined
+                      <>
+                        <div
+                          className="flex items-center"
+                          key={userDocument.id}
+                        >
+                          <div className="basis-[34px]">
+                            {getDocumentStatusIcon(
+                              userDocument.status || undefined
+                            )}
+                          </div>
+                          <FileLink userDocument={userDocument} />
+                          {isValidApplicationPeriod && (
+                            <button
+                              className="btn-primary btn-sm btn"
+                              onClick={() =>
+                                handleClickAnalyseButton(userDocument)
+                              }
+                            >
+                              {userDocument.status
+                                ? "Mudar analise"
+                                : "Analisar"}
+                            </button>
+                          )}
+                        </div>
+                        {userDocument.reasonForRejection && (
+                          <p className="truncate text-left text-sm">
+                            <span className="font-medium">
+                              Motivo da rejeição:{" "}
+                            </span>
+                            {userDocument.reasonForRejection}
+                          </p>
                         )}
-                        <FileLink userDocument={userDocument} />
-                        {isValidApplicationPeriod && (
-                          <button
-                            className="btn-primary btn-sm btn"
-                            onClick={() =>
-                              handleClickAnalyseButton(userDocument)
-                            }
-                          >
-                            {userDocument.status ? "Mudar analise" : "Analisar"}
-                          </button>
-                        )}
-                      </div>
+                      </>
                     ))
                   ) : (
                     <p>Nehum documento enviado</p>
@@ -308,25 +322,39 @@ const UserApplication: NextPage = () => {
                 <div className="mt-2 flex flex-col gap-2">
                   {registrationDataDocuments.length > 0 ? (
                     registrationDataDocuments.map((userDocument) => (
-                      <div
-                        className="flex items-center gap-2"
-                        key={userDocument.id}
-                      >
-                        {getDocumentStatusIcon(
-                          userDocument.status || undefined
+                      <>
+                        <div
+                          className="flex items-center"
+                          key={userDocument.id}
+                        >
+                          <div className="basis-[34px]">
+                            {getDocumentStatusIcon(
+                              userDocument.status || undefined
+                            )}
+                          </div>
+                          <FileLink userDocument={userDocument} />
+                          {isValidApplicationPeriod && (
+                            <button
+                              className="btn-primary btn-sm btn"
+                              onClick={() =>
+                                handleClickAnalyseButton(userDocument)
+                              }
+                            >
+                              {userDocument.status
+                                ? "Mudar analise"
+                                : "Analisar"}
+                            </button>
+                          )}
+                        </div>
+                        {userDocument.reasonForRejection && (
+                          <p className="truncate text-left text-sm">
+                            <span className="font-medium">
+                              Motivo da rejeição:{" "}
+                            </span>
+                            {userDocument.reasonForRejection}
+                          </p>
                         )}
-                        <FileLink userDocument={userDocument} />
-                        {isValidApplicationPeriod && (
-                          <button
-                            className="btn-primary btn-sm btn"
-                            onClick={() =>
-                              handleClickAnalyseButton(userDocument)
-                            }
-                          >
-                            {userDocument.status ? "Mudar analise" : "Analisar"}
-                          </button>
-                        )}
-                      </div>
+                      </>
                     ))
                   ) : (
                     <p>Nehum documento enviado</p>
@@ -335,28 +363,42 @@ const UserApplication: NextPage = () => {
               </div>
               <div className="flex w-full flex-col">
                 <h2 className="text-xl font-medium">Dados acadêmicos</h2>
-                <div className="mt-2 flex flex-col gap-2">
+                <div className="mt-2 flex flex-col">
                   {academicDataDocuments.length > 0 ? (
                     academicDataDocuments.map((userDocument) => (
-                      <div
-                        className="flex items-center gap-2"
-                        key={userDocument.id}
-                      >
-                        {getDocumentStatusIcon(
-                          userDocument.status || undefined
+                      <>
+                        <div
+                          className="flex items-center"
+                          key={userDocument.id}
+                        >
+                          <div className="basis-[34px]">
+                            {getDocumentStatusIcon(
+                              userDocument.status || undefined
+                            )}
+                          </div>
+                          <FileLink userDocument={userDocument} />
+                          {isValidApplicationPeriod && (
+                            <button
+                              className="btn-primary btn-sm btn"
+                              onClick={() =>
+                                handleClickAnalyseButton(userDocument)
+                              }
+                            >
+                              {userDocument.status
+                                ? "Mudar analise"
+                                : "Analisar"}
+                            </button>
+                          )}
+                        </div>
+                        {userDocument.reasonForRejection && (
+                          <p className="truncate text-left text-sm">
+                            <span className="font-medium">
+                              Motivo da rejeição:{" "}
+                            </span>
+                            {userDocument.reasonForRejection}
+                          </p>
                         )}
-                        <FileLink userDocument={userDocument} />
-                        {isValidApplicationPeriod && (
-                          <button
-                            className="btn-primary btn-sm btn"
-                            onClick={() =>
-                              handleClickAnalyseButton(userDocument)
-                            }
-                          >
-                            {userDocument.status ? "Mudar analise" : "Analisar"}
-                          </button>
-                        )}
-                      </div>
+                      </>
                     ))
                   ) : (
                     <p>Nehum documento enviado</p>
@@ -368,25 +410,39 @@ const UserApplication: NextPage = () => {
                 <div className="mt-2 flex flex-col gap-2">
                   {curriculumDocuments.length > 0 ? (
                     curriculumDocuments.map((userDocument) => (
-                      <div
-                        className="flex items-center gap-2"
-                        key={userDocument.id}
-                      >
-                        {getDocumentStatusIcon(
-                          userDocument.status || undefined
+                      <>
+                        <div
+                          className="flex items-center"
+                          key={userDocument.id}
+                        >
+                          <div className="basis-[34px]">
+                            {getDocumentStatusIcon(
+                              userDocument.status || undefined
+                            )}
+                          </div>
+                          <FileLink userDocument={userDocument} />
+                          {isValidApplicationPeriod && (
+                            <button
+                              className="btn-primary btn-sm btn"
+                              onClick={() =>
+                                handleClickAnalyseButton(userDocument)
+                              }
+                            >
+                              {userDocument.status
+                                ? "Mudar analise"
+                                : "Analisar"}
+                            </button>
+                          )}
+                        </div>
+                        {userDocument.reasonForRejection && (
+                          <p className="truncate text-left text-sm">
+                            <span className="font-medium">
+                              Motivo da rejeição:{" "}
+                            </span>
+                            {userDocument.reasonForRejection}
+                          </p>
                         )}
-                        <FileLink userDocument={userDocument} />
-                        {isValidApplicationPeriod && (
-                          <button
-                            className="btn-primary btn-sm btn"
-                            onClick={() =>
-                              handleClickAnalyseButton(userDocument)
-                            }
-                          >
-                            {userDocument.status ? "Mudar analise" : "Analisar"}
-                          </button>
-                        )}
-                      </div>
+                      </>
                     ))
                   ) : (
                     <p>Nehum documento enviado</p>

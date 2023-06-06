@@ -343,7 +343,16 @@ const ProcessDetail: NextPage = () => {
               )}
               {processApplications?.map(({ id, user, status }) => (
                 <tr key={id}>
-                  <td>{user.name}</td>
+                  <td
+                    onClick={() =>
+                      router.push(
+                        `/secretario/processo/${processId}/inscricao/${id}`
+                      )
+                    }
+                    className="w-fit cursor-pointer hover:underline"
+                  >
+                    {user.name}
+                  </td>
                   <td>{status ? "Analisado" : "Pendente"}</td>
                   <td>
                     {status ? (
