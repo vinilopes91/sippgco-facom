@@ -39,16 +39,20 @@ enum Step {
 }
 
 enum Modality {
-    REGULAR_MASTER
-    SPECIAL_MASTER
+    MASTER
     DOCTORATE
+}
+
+enum ModalityType {
+    REGULAR
+    SPECIAL
 }
 
 enum VacancyType {
     BROAD_COMPETITION
     RACIAL_QUOTA
-    INDIGENOUS_QUOTA
     DEFICIENT_QUOTA
+    HUMANITARIAN_POLICES
 }
 
 model Document {
@@ -79,6 +83,8 @@ model Process {
     name                        String
     applicationStartDate        DateTime
     applicationEndDate          DateTime
+    analysisEndDate             DateTime
+    editalLink                  String?
     status                      ProcessStatus
     active                      Boolean               @default(true)
     applicationsResultAnnounced Boolean               @default(false)
@@ -96,6 +102,7 @@ model Application {
     id                          String                       @id @default(cuid())
     userId                      String
     processId                   String
+    active                      Boolean                      @default(true)
     status                      AnalysisStatus?
     reasonForRejection          String?
     applicationFilled           Boolean                      @default(false)
@@ -189,9 +196,25 @@ model ProcessResearchLine {
 
 model PersonalDataApplication {
     id            String      @id @default(cuid())
+    stepCompleted Boolean     @default(false)
     userId        String
     applicationId String      @unique
-    phone         String
+    phone         String?
+    mobilePhone   String?
+    isWhatsApp    Boolean?
+    cpf           String?
+    rgNumber      String?
+    rgState       String?
+    rgOrg         String?
+    birthDate     DateTime?
+    street        String?
+    number        String?
+    complement    String?
+    neighborhood  String?
+    city          String?
+    state         String?
+    cep           String?
+    nationality   String?
     user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
     application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
     createdAt     DateTime    @default(now())
@@ -202,19 +225,22 @@ model PersonalDataApplication {
 }
 
 model RegistrationDataApplication {
-    id             String       @id @default(cuid())
+    id             String        @id @default(cuid())
+    stepCompleted  Boolean       @default(false)
     userId         String
-    applicationId  String       @unique
-    researchLineId String
-    specialStudent Boolean
-    scholarship    Boolean
-    modality       Modality
-    vacancyType    VacancyType
-    user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-    application    Application  @relation(fields: [applicationId], references: [id])
-    researchLine   ResearchLine @relation(fields: [researchLineId], references: [id], onDelete: Cascade)
-    createdAt      DateTime     @default(now())
-    updatedAt      DateTime     @updatedAt
+    applicationId  String        @unique
+    researchLineId String?
+    specialStudent Boolean?
+    scholarship    Boolean?
+    modality       Modality?
+    modalityType   ModalityType?
+    vacancyType    VacancyType?
+    tutors         String?
+    user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+    application    Application   @relation(fields: [applicationId], references: [id])
+    researchLine   ResearchLine? @relation(fields: [researchLineId], references: [id], onDelete: Cascade)
+    createdAt      DateTime      @default(now())
+    updatedAt      DateTime      @updatedAt
 
     @@index([userId])
     @@index([applicationId])
@@ -222,17 +248,21 @@ model RegistrationDataApplication {
 }
 
 model AcademicDataApplication {
-    id                       String      @id @default(cuid())
-    userId                   String
-    applicationId            String      @unique
-    courseArea               String
-    completionOrForecastYear String
-    institution              String
-    wasSpecialStudent        Boolean
-    user                     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-    application              Application @relation(fields: [applicationId], references: [id])
-    createdAt                DateTime    @default(now())
-    updatedAt                DateTime    @updatedAt
+    id                             String      @id @default(cuid())
+    stepCompleted                  Boolean     @default(false)
+    userId                         String
+    applicationId                  String      @unique
+    course                         String?
+    completionOrForecastYearCourse String?
+    institutionCourse              String?
+    area                           String?
+    completionOrForecastYearArea   String?
+    institutionArea                String?
+    wasSpecialStudent              Boolean?
+    user                           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+    application                    Application @relation(fields: [applicationId], references: [id])
+    createdAt                      DateTime    @default(now())
+    updatedAt                      DateTime    @updatedAt
 
     @@index([userId])
     @@index([applicationId])

@@ -8,7 +8,7 @@ export const validateApplicationPeriodRequest = (
   if (!application) {
     throw new TRPCError({
       code: "BAD_REQUEST",
-      message: "Não existe inscrição com esse id",
+      message: "Inscrição não encontrada",
     });
   }
 

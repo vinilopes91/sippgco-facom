@@ -1,10 +1,26 @@
 import { type NextPage } from "next";
 import Base from "@/layout/Base";
 import Link from "next/link";
-import { api } from "@/utils/api";
+import { type RouterOutputs, api } from "@/utils/api";
 import { useSession } from "next-auth/react";
+import { useState } from "react";
+import { TrashIcon } from "@heroicons/react/24/outline";
+import DeleteApplicationModal from "@/components/Modals/DeleteApplication";
+
+type ApplicationResponse =
+  RouterOutputs["application"]["listUserApplications"][number];
 
 const CandidatoHome: NextPage = () => {
+  const [openDeleteApplicationModal, setOpenDeleteApplicationModal] =
+    useState(false);
+  const [applicationSelected, setApplicationSelected] =
+    useState<ApplicationResponse>();
+
+  const handleClickDeleteButton = (application: ApplicationResponse) => {
+    setApplicationSelected(application);
+    setOpenDeleteApplicationModal(true);
+  };
+
   const { data: activeProcesses, isLoading: isLoadingActiveProcesses } =
     api.process.list.useQuery({
       status: "ACTIVE",
@@ -19,6 +35,11 @@ const CandidatoHome: NextPage = () => {
 
   return (
     <Base>
+      <DeleteApplicationModal
+        onClose={() => setOpenDeleteApplicationModal(false)}
+        open={openDeleteApplicationModal}
+        application={applicationSelected}
+      />
       <div className="grid gap-9 sm:grid-cols-2">
         <div className="rounded-lg bg-white p-6 drop-shadow-md">
           <h2 className="text-2xl font-bold">Minhas candidaturas</h2>
@@ -34,12 +55,20 @@ const CandidatoHome: NextPage = () => {
             )}
             {userApplications?.map((application) => (
               <li key={application.id}>
-                <Link
-                  className="font-medium"
-                  href={`/candidato/inscricao/${application.id}`}
-                >
-                  {application.process.name}
-                </Link>
+                <div className="flex items-center gap-2">
+                  <Link
+                    className="font-medium"
+                    href={`/candidato/inscricao/${application.id}`}
+                  >
+                    {application.process.name}
+                  </Link>
+                  <button
+                    className="btn-ghost btn h-fit min-h-fit p-0 text-red-500"
+                    onClick={() => handleClickDeleteButton(application)}
+                  >
+                    <TrashIcon width={20} />
+                  </button>
+                </div>
               </li>
             ))}
           </ul>

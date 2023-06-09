@@ -95,8 +95,19 @@ const Curriculum: NextPage = () => {
           <h2 className="text-2xl font-bold">{applicationData.process.name}</h2>
         </div>
         <div className="my-4 flex justify-center">
-          <ApplicationStepper currentStep={4} />
+          <ApplicationStepper currentStep={4} application={applicationData} />
         </div>
+
+        {(!applicationData.registrationDataApplication?.modality ||
+          !applicationData.registrationDataApplication?.vacancyType) && (
+          <div>
+            <p className="font-medium">
+              * Selecione o tipo e modalidade de vaga na etapa 2 (Dados da
+              inscrição) para carregar os documentos necessários
+            </p>
+          </div>
+        )}
+
         <div className="flex flex-col gap-4">
           {userStepDocuments.map(({ document, documentId }) => (
             <CurriculumFileInput
@@ -107,10 +118,21 @@ const Curriculum: NextPage = () => {
             />
           ))}
         </div>
-        <div className="mt-[50px] flex w-full items-center justify-end">
+        <div className="mt-[50px] flex w-full items-center justify-between gap-2">
+          <button
+            className="btn-primary btn w-36"
+            onClick={() =>
+              router.push(
+                `/candidato/inscricao/${applicationData.id}/dados-academicos`
+              )
+            }
+            type="button"
+          >
+            Voltar
+          </button>
           <button
             className={clsx(
-              "btn-primary btn w-36",
+              "btn-primary btn",
               isFinishingApplication && "loading"
             )}
             disabled={
@@ -123,7 +145,7 @@ const Curriculum: NextPage = () => {
               finishApplication({ applicationId: applicationData.id })
             }
           >
-            Concluir
+            Concluir inscrição
           </button>
         </div>
         {!isValidApplicationPeriod && (

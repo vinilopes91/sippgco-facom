@@ -4,6 +4,7 @@ import {
   protectedProcedure,
 } from "@/server/api/trpc";
 import { createResearchLineSchema } from "@/common/validation/researchLine";
+import { z } from "zod";
 
 export const researchLineRouter = createTRPCRouter({
   list: protectedProcedure.query(async ({ ctx }) => {
@@ -20,6 +21,24 @@ export const researchLineRouter = createTRPCRouter({
     });
 
     return researchLineList;
+  }),
+  get: protectedProcedure.input(z.object({
+    id: z.string().cuid(),
+  })).query(async ({ ctx, input }) => {
+    const researchLine = await ctx.prisma.researchLine.findFirst({
+      where: {
+        active: true,
+        id: input.id,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        TutorResearchLine: true,
+      },
+    });
+
+    return researchLine;
   }),
   create: protectedProcedure
     .use(enforceUserIsAdmin)

@@ -172,7 +172,7 @@ const UserApplication: NextPage = () => {
               <p className="font-medium">
                 Telefone:{" "}
                 <span className="font-normal">
-                  {maskPhoneNumber(application.personalDataApplication.phone)}
+                  {application.personalDataApplication.phone && maskPhoneNumber(application.personalDataApplication.phone)}
                 </span>
               </p>
             </div>
@@ -189,7 +189,7 @@ const UserApplication: NextPage = () => {
                 Tipo de vaga:{" "}
                 <span className="font-normal">
                   {
-                    vacancyTypeMapper[
+                    application.registrationDataApplication.vacancyType && vacancyTypeMapper[
                       application.registrationDataApplication.vacancyType
                     ]
                   }
@@ -199,7 +199,7 @@ const UserApplication: NextPage = () => {
                 Modalidade de vaga:{" "}
                 <span className="font-normal">
                   {
-                    modalityMapper[
+                    application.registrationDataApplication.modality && modalityMapper[
                       application.registrationDataApplication.modality
                     ]
                   }
@@ -208,7 +208,7 @@ const UserApplication: NextPage = () => {
               <p className="font-medium">
                 Linha de pesquisa:{" "}
                 <span className="font-normal">
-                  {application.registrationDataApplication.researchLine.name}
+                  {application.registrationDataApplication.researchLine?.name}
                 </span>
               </p>
               <p className="font-medium">
@@ -238,21 +238,24 @@ const UserApplication: NextPage = () => {
           {application.academicDataApplication && (
             <div className="mt-2 grid grid-cols-3 items-center gap-2">
               <p className="font-medium">
-                Curso/Área:{" "}
+                Curso de Graduação:{" "}
                 <span className="font-normal">
-                  {application.academicDataApplication.courseArea}
+                  {application.academicDataApplication.course}
                 </span>
               </p>
               <p className="font-medium">
-                Ano ou previsão de conclusão:{" "}
+                Ano ou previsão de conclusão do curso de graduação:{" "}
                 <span className="font-normal">
-                  {application.academicDataApplication.completionOrForecastYear}
+                  {
+                    application.academicDataApplication
+                      .completionOrForecastYearCourse
+                  }
                 </span>
               </p>
               <p className="font-medium">
-                Instituição:{" "}
+                Instituição do curso de graduação:{" "}
                 <span className="font-normal">
-                  {application.academicDataApplication.institution}
+                  {application.academicDataApplication.institutionCourse}
                 </span>
               </p>
               <p className="font-medium">

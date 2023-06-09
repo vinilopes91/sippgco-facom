@@ -23,6 +23,7 @@ export const env = createEnv({
     AWS_ACCESS_KEY_ID: z.string().min(1),
     AWS_SECRET_ACCESS_KEY: z.string().min(1),
     AWS_DEFAULT_REGION: z.string().min(1),
+    ADMIN_SECRET: z.string().min(1),
     // Add `.min(1) on ID and SECRET if you want to make sure they're not empty
   },
 
@@ -47,5 +48,6 @@ export const env = createEnv({
     AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
     AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
     AWS_DEFAULT_REGION: process.env.AWS_DEFAULT_REGION,
+    ADMIN_SECRET: process.env.ADMIN_SECRET,
   },
 });

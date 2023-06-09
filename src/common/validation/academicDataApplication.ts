@@ -1,9 +1,9 @@
 import * as z from "zod";
 
-export const createAcademicDataApplicationSchema = z.object({
+export const finalizeAcademicDataApplicationSchema = z.object({
   applicationId: z.string().cuid(),
-  courseArea: z.string().min(1, "Campo obrigatório"),
-  completionOrForecastYear: z
+  course: z.string().min(1, "Campo obrigatório"),
+  completionOrForecastYearCourse: z
     .string()
     .length(4, "Campo obrigatório, digite o ano completo")
     .transform((val, ctx) => {
@@ -24,17 +24,41 @@ export const createAcademicDataApplicationSchema = z.object({
       }
       return val;
     }),
-  institution: z.string().min(1, "Campo obrigatório"),
+  institutionCourse: z.string().min(1, "Campo obrigatório"),
+  area: z.string().min(1, "Campo obrigatório").optional(),
+  completionOrForecastYearArea: z
+    .string()
+    .length(4, "Campo obrigatório, digite o ano completo")
+    .transform((val, ctx) => {
+      const parsed = parseInt(val);
+      if (isNaN(parsed)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Input inválido",
+        });
+        return z.NEVER;
+      }
+      if (parsed < 1900) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Ano inválido",
+        });
+        return z.NEVER;
+      }
+      return val;
+    })
+    .optional(),
+  institutionArea: z.string().min(1, "Campo obrigatório").optional(),
   wasSpecialStudent: z.boolean(),
 });
 
-export type CreateAcademicDataApplicationSchema = z.infer<
-  typeof createAcademicDataApplicationSchema
+export type FinalizeAcademicDataApplicationSchema = z.infer<
+  typeof finalizeAcademicDataApplicationSchema
 >;
 
 export const updateAcademicDataApplicationSchema =
-  createAcademicDataApplicationSchema.partial().extend({
-    id: z.string().cuid(),
+  finalizeAcademicDataApplicationSchema.partial().extend({
+    applicationId: z.string().cuid("Campo obrigatório"),
   });
 
 export type UpdateAcademicDataApplicationSchema = z.infer<

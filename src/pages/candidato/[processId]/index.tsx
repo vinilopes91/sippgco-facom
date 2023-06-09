@@ -104,6 +104,19 @@ const Processo: NextPage = () => {
           )}
         </div>
         <div className="mt-2">
+          {processData.editalLink && (
+            <>
+              <h2 className="mt-5 text-2xl font-bold">Edital</h2>
+              <a
+                href={processData.editalLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-1 font-medium text-blue-500 hover:underline"
+              >
+                Edital {processData.name}
+              </a>
+            </>
+          )}
           <h2 className="mt-5 text-2xl font-bold">Período de inscrição</h2>
           <p className="font-medium">
             Data inicial de inscrição:{" "}

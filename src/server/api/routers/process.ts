@@ -207,6 +207,8 @@ export const processRouter = createTRPCRouter({
         regularMasterVacancies,
         researchLines,
         specialMasterVacancies,
+        analysisEndDate,
+        editalLink,
       } = input;
 
       const processCreated = await ctx.prisma.process.create({
@@ -215,9 +217,11 @@ export const processRouter = createTRPCRouter({
           status: "DRAFT",
           applicationEndDate: endOfDay(new Date(applicationEndDate)),
           applicationStartDate: startOfDay(new Date(applicationStartDate)),
+          analysisEndDate: endOfDay(new Date(analysisEndDate)),
           regularDoctorateVacancies,
           regularMasterVacancies,
           specialMasterVacancies,
+          editalLink,
           ProcessDocument: {
             createMany: {
               data: documents.map((document) => ({
@@ -331,6 +335,7 @@ export const processRouter = createTRPCRouter({
       const processApplications = await ctx.prisma.application.findMany({
         where: {
           processId: input.id,
+          active: true,
         },
         include: {
           user: true,

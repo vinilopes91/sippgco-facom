@@ -4,8 +4,8 @@ import { type RouterOutputs } from "./api";
 type Params = {
   documents: RouterOutputs["processDocuments"]["listProcessDocuments"];
   step: Step;
-  modality?: Modality;
-  vacancyType?: VacancyType;
+  modality?: Modality | null;
+  vacancyType?: VacancyType | null;
 };
 
 export const filterProcessStepDocuments = ({
@@ -14,6 +14,7 @@ export const filterProcessStepDocuments = ({
   vacancyType,
   step,
 }: Params) => {
+  if (!modality || !vacancyType) return [];
   let filteredDocuments = documents.filter(
     (processDocument) => processDocument.document.step === step
   );

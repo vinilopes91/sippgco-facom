@@ -82,7 +82,7 @@ const ResearchLineTable = ({
         <tfoot>
           <tr>
             <td colSpan={8} className="text-red-500">
-              Selecione ao menos um documento
+              Selecione ao menos uma linha de pesquisa
             </td>
           </tr>
         </tfoot>

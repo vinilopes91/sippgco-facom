@@ -45,7 +45,7 @@ const CurriculumFileInput = ({
     api.userDocument.delete.useMutation({
       onSuccess: () => {
         void ctx.application.getUserApplication.invalidate({
-          applicationId: router.query.applicationId as string,
+          applicationId: applicationData.id,
         });
         setQuantity(undefined);
       },
@@ -200,7 +200,7 @@ const CurriculumFileInput = ({
       <div className="grid grid-cols-4 items-end gap-2">
         <FileInput
           showRequiredMessage={document.required}
-          label={`${document.name} (Máx: ${document.maximumScore!})`}
+          label={document.name}
           accept="application/pdf"
           disabled={!isValidApplicationPeriod || isUploading}
           onChange={onFileChange}
@@ -220,7 +220,7 @@ const CurriculumFileInput = ({
         />
         <ControlledInput
           name="documentScore"
-          label="Pontuação possível"
+          label={`Pontuação possível (Máx: ${document.maximumScore!})`}
           placeholder="Pontuação possível"
           disabled
           readOnly

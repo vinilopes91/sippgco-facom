@@ -20,24 +20,21 @@ export const createDocumentSchema = z.object({
     }
   ),
   modality: z.array(
-    z.enum(
-      [Modality.DOCTORATE, Modality.REGULAR_MASTER, Modality.SPECIAL_MASTER],
-      {
-        errorMap: (issue, ctx) => {
-          if (issue.code === z.ZodIssueCode.invalid_enum_value) {
-            return { message: "Opção inválida" };
-          }
-          return { message: ctx.defaultError };
-        },
-      }
-    )
+    z.enum([Modality.DOCTORATE, Modality.MASTER], {
+      errorMap: (issue, ctx) => {
+        if (issue.code === z.ZodIssueCode.invalid_enum_value) {
+          return { message: "Opção inválida" };
+        }
+        return { message: ctx.defaultError };
+      },
+    })
   ),
   vacancyType: z.array(
     z.enum(
       [
         VacancyType.BROAD_COMPETITION,
         VacancyType.DEFICIENT_QUOTA,
-        VacancyType.INDIGENOUS_QUOTA,
+        VacancyType.HUMANITARIAN_POLICES,
         VacancyType.RACIAL_QUOTA,
       ],
       {

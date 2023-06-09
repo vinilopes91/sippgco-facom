@@ -45,17 +45,17 @@ const Inscricao: NextPage = () => {
 
   const handleClickViewApplication = () => {
     const applicationId = router.query.applicationId as string;
-    if (!applicationData.personalDataApplication) {
+    if (!applicationData.personalDataApplication?.stepCompleted) {
       return router.push(
         `/candidato/inscricao/${applicationId}/dados-pessoais`
       );
     }
-    if (!applicationData.registrationDataApplication) {
+    if (!applicationData.registrationDataApplication?.stepCompleted) {
       return router.push(
         `/candidato/inscricao/${applicationId}/dados-inscricao`
       );
     }
-    if (!applicationData.academicDataApplication) {
+    if (!applicationData.academicDataApplication?.stepCompleted) {
       return router.push(
         `/candidato/inscricao/${applicationId}/dados-academicos`
       );
@@ -106,12 +106,25 @@ const Inscricao: NextPage = () => {
               ).toLocaleDateString()}
             </span>
           </p>
+          {applicationData.process.editalLink && (
+            <p className="mt-2 text-lg font-medium">
+              Edital:{" "}
+              <a
+                href={applicationData.process.editalLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-1 text-base font-medium text-blue-500 hover:underline"
+              >
+                Edital {applicationData.process.name}
+              </a>
+            </p>
+          )}
         </div>
         <div className="mt-10 flex w-72 flex-col">
           <div className="flex w-full items-center justify-between">
             <p className="font-medium">Dados pessoais</p>
             <span className="badge rounded-full px-2 py-1">
-              {applicationData.personalDataApplication?.id
+              {applicationData.personalDataApplication?.stepCompleted
                 ? "Preenchido"
                 : "Pendente"}
             </span>
@@ -119,7 +132,7 @@ const Inscricao: NextPage = () => {
           <div className="flex w-full items-center justify-between">
             <p className="font-medium">Dados da inscrição</p>
             <span className="badge rounded-full px-2 py-1">
-              {applicationData.registrationDataApplication?.id
+              {applicationData.registrationDataApplication?.stepCompleted
                 ? "Preenchido"
                 : "Pendente"}
             </span>
@@ -127,7 +140,7 @@ const Inscricao: NextPage = () => {
           <div className="flex w-full items-center justify-between">
             <p className="font-medium">Dados acadêmicos</p>
             <span className="badge rounded-full px-2 py-1">
-              {applicationData.academicDataApplication?.id
+              {applicationData.academicDataApplication?.stepCompleted
                 ? "Preenchido"
                 : "Pendente"}
             </span>

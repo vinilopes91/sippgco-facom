@@ -1,6 +1,6 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import {
-  createAcademicDataApplicationSchema,
+  finalizeAcademicDataApplicationSchema,
   updateAcademicDataApplicationSchema,
 } from "@/common/validation/academicDataApplication";
 import { TRPCError } from "@trpc/server";
@@ -9,12 +9,13 @@ import { filterProcessStepDocuments } from "@/utils/filterDocuments";
 import { validateStepRequiredDocuments } from "@/server/utils/validateStepRequiredDocuments";
 
 export const academicDataApplicationRouter = createTRPCRouter({
-  create: protectedProcedure
-    .input(createAcademicDataApplicationSchema)
+  finalize: protectedProcedure
+    .input(finalizeAcademicDataApplicationSchema)
     .mutation(async ({ ctx, input }) => {
       const application = await ctx.prisma.application.findFirst({
         where: {
           id: input.applicationId,
+          active: true,
         },
         include: {
           UserDocumentApplication: {
@@ -38,31 +39,17 @@ export const academicDataApplicationRouter = createTRPCRouter({
 
       validateApplicationPeriodRequest(application);
 
-      const register = await ctx.prisma.academicDataApplication.findFirst({
-        where: {
-          userId: ctx.session.user.id,
-          applicationId: input.applicationId,
-        },
-      });
-
-      if (register) {
-        throw new TRPCError({
-          code: "CONFLICT",
-          message: "Já existe um registro com esses dados",
-        });
-      }
-
-      if (!application?.personalDataApplication) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Etapa de dados pessoais não completada",
-        });
-      }
-
       if (!application?.registrationDataApplication) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Etapa de dados da inscrição não completada",
+          message: "É necessário finalizar a etapa de dados da inscrição",
+        });
+      }
+      
+      if (!application?.registrationDataApplication.modality || !application?.registrationDataApplication.vacancyType) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "É necessário finalizar a etapa de dados da inscrição",
         });
       }
 
@@ -91,9 +78,17 @@ export const academicDataApplicationRouter = createTRPCRouter({
         userDocuments: userAcademicDocuments,
       });
 
-      return ctx.prisma.academicDataApplication.create({
-        data: {
+      return ctx.prisma.academicDataApplication.upsert({
+        where: {
+          applicationId: input.applicationId,
+        },
+        update: {
+          stepCompleted: true,
+          ...input,
+        },
+        create: {
           userId: ctx.session.user.id,
+          stepCompleted: true,
           ...input,
         },
       });
@@ -101,61 +96,40 @@ export const academicDataApplicationRouter = createTRPCRouter({
   update: protectedProcedure
     .input(updateAcademicDataApplicationSchema)
     .mutation(async ({ ctx, input }) => {
-      const register = await ctx.prisma.academicDataApplication.findFirst({
+      const application = await ctx.prisma.application.findFirst({
         where: {
-          id: input.id,
+          id: input.applicationId,
+          active: true,
         },
         include: {
-          application: {
+          UserDocumentApplication: {
             include: {
-              process: true,
-              UserDocumentApplication: true,
-              registrationDataApplication: true,
+              document: true,
+            },
+          },
+          process: {
+            include: {
+              ProcessDocument: {
+                include: {
+                  document: true,
+                },
+              },
             },
           },
         },
       });
 
-      if (!register) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Registro não encontrado",
-        });
-      }
+      validateApplicationPeriodRequest(application);
 
-      validateApplicationPeriodRequest(register.application);
-
-      const academicDataDocuments = await ctx.prisma.processDocument.findMany({
+      return ctx.prisma.academicDataApplication.upsert({
         where: {
-          processId: register.application.processId,
-          document: {
-            step: "ACADEMIC_DATA",
-            active: true,
-          },
+          applicationId: input.applicationId,
         },
-        include: {
-          document: true,
+        create: {
+          userId: ctx.session.user.id,
+          ...input,
         },
-      });
-
-      const userAcademicDocuments = filterProcessStepDocuments({
-        documents: academicDataDocuments,
-        step: "ACADEMIC_DATA",
-        modality: register.application.registrationDataApplication?.modality,
-        vacancyType:
-          register.application.registrationDataApplication?.vacancyType,
-      });
-
-      validateStepRequiredDocuments({
-        application: register.application,
-        userDocuments: userAcademicDocuments,
-      });
-
-      return ctx.prisma.academicDataApplication.update({
-        where: {
-          id: input.id,
-        },
-        data: {
+        update: {
           userId: ctx.session.user.id,
           ...input,
         },

@@ -157,6 +157,18 @@ const ProcessDetail: NextPage = () => {
           <p className="font-medium">
             Status: <ProcessStatusBadge status={processData.status} />
           </p>
+          {processData.editalLink && (
+            <p className="font-medium">
+              Link edital:{" "}
+              <a
+                href={processData.editalLink}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Edital {processData.name}
+              </a>
+            </p>
+          )}
           <p className="font-medium">
             Data inicial de inscrição:{" "}
             <span className="font-normal">
@@ -167,6 +179,12 @@ const ProcessDetail: NextPage = () => {
             Data final de inscrição:{" "}
             <span className="font-normal">
               {new Date(processData.applicationEndDate).toLocaleDateString()}
+            </span>
+          </p>
+          <p className="font-medium">
+            Data final para análise:{" "}
+            <span className="font-normal">
+              {new Date(processData.analysisEndDate).toLocaleDateString()}
             </span>
           </p>
         </div>
@@ -191,6 +209,82 @@ const ProcessDetail: NextPage = () => {
             </span>
           </p>
         </div>
+
+        <h2 className="mt-3 text-2xl font-bold">Inscrições</h2>
+        <div className="mt-2 w-full">
+          <table className="table w-full">
+            <thead>
+              <tr>
+                <th>Nome do candidato</th>
+                <th>Status</th>
+                <th> </th>
+              </tr>
+            </thead>
+            <tbody>
+              {processApplications?.length === 0 && (
+                <tr>
+                  <td className="text-center font-medium" colSpan={3}>
+                    Nenhuma inscrição cadastrada
+                  </td>
+                </tr>
+              )}
+              {isLoadingApplications && (
+                <>
+                  <tr>
+                    <td
+                      className="h-14 animate-pulse bg-slate-300 text-center font-medium"
+                      colSpan={3}
+                    />
+                  </tr>
+                  <tr>
+                    <td
+                      className="h-14 animate-pulse bg-slate-300 text-center font-medium"
+                      colSpan={3}
+                    />
+                  </tr>
+                  <tr>
+                    <td
+                      className="h-14 animate-pulse bg-slate-300 text-center font-medium"
+                      colSpan={3}
+                    />
+                  </tr>
+                </>
+              )}
+              {processApplications?.map(({ id, user, status }) => (
+                <tr key={id}>
+                  <td
+                    onClick={() =>
+                      router.push(
+                        `/secretario/processo/${processId}/inscricao/${id}`
+                      )
+                    }
+                    className="w-fit cursor-pointer hover:underline"
+                  >
+                    {user.name}
+                  </td>
+                  <td>{status ? "Analisado" : "Pendente"}</td>
+                  <td>
+                    {status ? (
+                      `Inscrição ${analysisStatusMapper[status]}`
+                    ) : (
+                      <button
+                        className="btn-primary btn-sm btn"
+                        onClick={() =>
+                          router.push(
+                            `/secretario/processo/${processId}/inscricao/${id}`
+                          )
+                        }
+                      >
+                        Analisar
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
         <h2 className="mt-3 text-2xl font-bold">Linhas de pesquisa</h2>
         <div className="mt-2 overflow-x-auto">
           <table className="table w-full">
@@ -296,80 +390,6 @@ const ProcessDetail: NextPage = () => {
                   <td>{document.required ? "Sim" : "Não"}</td>
                   <td>{document.score || "-"}</td>
                   <td>{document.maximumScore || "-"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <h2 className="mt-3 text-2xl font-bold">Inscrições</h2>
-        <div className="mt-2 w-full">
-          <table className="table w-full">
-            <thead>
-              <tr>
-                <th>Nome do candidato</th>
-                <th>Status</th>
-                <th> </th>
-              </tr>
-            </thead>
-            <tbody>
-              {processApplications?.length === 0 && (
-                <tr>
-                  <td className="text-center font-medium" colSpan={3}>
-                    Nenhuma inscrição cadastrada
-                  </td>
-                </tr>
-              )}
-              {isLoadingApplications && (
-                <>
-                  <tr>
-                    <td
-                      className="h-14 animate-pulse bg-slate-300 text-center font-medium"
-                      colSpan={3}
-                    />
-                  </tr>
-                  <tr>
-                    <td
-                      className="h-14 animate-pulse bg-slate-300 text-center font-medium"
-                      colSpan={3}
-                    />
-                  </tr>
-                  <tr>
-                    <td
-                      className="h-14 animate-pulse bg-slate-300 text-center font-medium"
-                      colSpan={3}
-                    />
-                  </tr>
-                </>
-              )}
-              {processApplications?.map(({ id, user, status }) => (
-                <tr key={id}>
-                  <td
-                    onClick={() =>
-                      router.push(
-                        `/secretario/processo/${processId}/inscricao/${id}`
-                      )
-                    }
-                    className="w-fit cursor-pointer hover:underline"
-                  >
-                    {user.name}
-                  </td>
-                  <td>{status ? "Analisado" : "Pendente"}</td>
-                  <td>
-                    {status ? (
-                      `Inscrição ${analysisStatusMapper[status]}`
-                    ) : (
-                      <button
-                        className="btn-primary btn-sm btn"
-                        onClick={() =>
-                          router.push(
-                            `/secretario/processo/${processId}/inscricao/${id}`
-                          )
-                        }
-                      >
-                        Analisar
-                      </button>
-                    )}
-                  </td>
                 </tr>
               ))}
             </tbody>

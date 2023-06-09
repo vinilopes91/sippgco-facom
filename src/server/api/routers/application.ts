@@ -25,6 +25,7 @@ export const applicationRouter = createTRPCRouter({
         where: {
           userId: ctx.session.user.id,
           processId: input?.processId,
+          active: true,
         },
         orderBy: {
           createdAt: "desc",
@@ -47,6 +48,7 @@ export const applicationRouter = createTRPCRouter({
         where: {
           userId: ctx.session.user.id,
           id: input.applicationId,
+          active: true,
         },
         orderBy: {
           createdAt: "desc",
@@ -124,6 +126,7 @@ export const applicationRouter = createTRPCRouter({
         where: {
           userId: ctx.session.user.id,
           processId,
+          active: true,
         },
       });
 
@@ -143,6 +146,38 @@ export const applicationRouter = createTRPCRouter({
 
       return application;
     }),
+  delete: protectedProcedure
+    .input(
+      z.object({
+        applicationId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const application = await ctx.prisma.application.findFirst({
+        where: {
+          id: input.applicationId,
+          active: true,
+        },
+      });
+
+      if (!application) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Inscrição não encontrada",
+        });
+      }
+
+      await ctx.prisma.application.update({
+        where: {
+          id: input.applicationId,
+        },
+        data: {
+          active: false,
+        },
+      });
+
+      return true;
+    }),
   finishApplicationFill: protectedProcedure
     .input(
       z.object({
@@ -153,6 +188,7 @@ export const applicationRouter = createTRPCRouter({
       const application = await ctx.prisma.application.findFirst({
         where: {
           id: input.applicationId,
+          active: true,
         },
         include: {
           UserDocumentApplication: {
@@ -174,6 +210,13 @@ export const applicationRouter = createTRPCRouter({
           registrationDataApplication: true,
         },
       });
+
+      if (!application) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Inscrição não encontrada",
+        });
+      }
 
       validateApplicationPeriodRequest(application);
 
@@ -262,6 +305,7 @@ export const applicationRouter = createTRPCRouter({
         where: {
           processId: input.processId,
           applicationFilled: true,
+          active: true,
         },
         include: {
           user: true,
@@ -280,6 +324,7 @@ export const applicationRouter = createTRPCRouter({
       const application = await ctx.prisma.application.findFirst({
         where: {
           id: input.applicationId,
+          active: true,
         },
         include: {
           UserDocumentApplication: {
@@ -328,6 +373,7 @@ export const applicationRouter = createTRPCRouter({
       const application = await ctx.prisma.application.findFirst({
         where: {
           id: input.id,
+          active: true,
         },
         include: {
           UserDocumentApplication: {

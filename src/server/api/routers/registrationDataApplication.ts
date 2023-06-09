@@ -1,20 +1,20 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import {
-  createRegistrationDataApplicationSchema,
+  finalizeRegistrationDataApplicationSchema,
   updateRegistrationDataApplicationSchema,
 } from "@/common/validation/registrationDataApplication";
-import { TRPCError } from "@trpc/server";
 import { validateApplicationPeriodRequest } from "@/server/utils/validateApplicationPeriodRequest";
 import { filterProcessStepDocuments } from "@/utils/filterDocuments";
 import { validateStepRequiredDocuments } from "@/server/utils/validateStepRequiredDocuments";
 
 export const registrationDataApplicationRouter = createTRPCRouter({
-  create: protectedProcedure
-    .input(createRegistrationDataApplicationSchema)
+  finalize: protectedProcedure
+    .input(finalizeRegistrationDataApplicationSchema)
     .mutation(async ({ ctx, input }) => {
       const application = await ctx.prisma.application.findFirst({
         where: {
           id: input.applicationId,
+          active: true,
         },
         include: {
           UserDocumentApplication: {
@@ -36,27 +36,6 @@ export const registrationDataApplicationRouter = createTRPCRouter({
       });
 
       validateApplicationPeriodRequest(application);
-
-      const register = await ctx.prisma.registrationDataApplication.findFirst({
-        where: {
-          userId: ctx.session.user.id,
-          applicationId: input.applicationId,
-        },
-      });
-
-      if (register) {
-        throw new TRPCError({
-          code: "CONFLICT",
-          message: "Já existe um registro com esses dados",
-        });
-      }
-
-      if (!application?.personalDataApplication) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Etapa de dados pessoais não completada",
-        });
-      }
 
       const registrationDataDocuments =
         await ctx.prisma.processDocument.findMany({
@@ -84,9 +63,17 @@ export const registrationDataApplicationRouter = createTRPCRouter({
         userDocuments: userRegistrationDocuments,
       });
 
-      return ctx.prisma.registrationDataApplication.create({
-        data: {
+      return ctx.prisma.registrationDataApplication.upsert({
+        where: {
+          applicationId: input.applicationId,
+        },
+        update: {
+          stepCompleted: true,
+          ...input,
+        },
+        create: {
           userId: ctx.session.user.id,
+          stepCompleted: true,
           ...input,
         },
       });
@@ -94,65 +81,40 @@ export const registrationDataApplicationRouter = createTRPCRouter({
   update: protectedProcedure
     .input(updateRegistrationDataApplicationSchema)
     .mutation(async ({ ctx, input }) => {
-      const register = await ctx.prisma.registrationDataApplication.findFirst({
+      const application = await ctx.prisma.application.findFirst({
         where: {
-          id: input.id,
+          id: input.applicationId,
+          active: true,
         },
         include: {
-          application: {
+          UserDocumentApplication: {
             include: {
-              process: true,
-              UserDocumentApplication: true,
-              registrationDataApplication: true,
+              document: true,
+            },
+          },
+          process: {
+            include: {
+              ProcessDocument: {
+                include: {
+                  document: true,
+                },
+              },
             },
           },
         },
       });
 
-      if (!register) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Registro não encontrado",
-        });
-      }
+      validateApplicationPeriodRequest(application);
 
-      validateApplicationPeriodRequest(register.application);
-
-      const registrationDataDocuments =
-        await ctx.prisma.processDocument.findMany({
-          where: {
-            processId: register.application.processId,
-            document: {
-              step: "REGISTRATION_DATA",
-              active: true,
-            },
-          },
-          include: {
-            document: true,
-          },
-        });
-
-      const userRegistrationDocuments = filterProcessStepDocuments({
-        documents: registrationDataDocuments,
-        step: "REGISTRATION_DATA",
-        modality:
-          input.modality ||
-          register.application.registrationDataApplication?.modality,
-        vacancyType:
-          input.vacancyType ||
-          register.application.registrationDataApplication?.vacancyType,
-      });
-
-      validateStepRequiredDocuments({
-        application: register.application,
-        userDocuments: userRegistrationDocuments,
-      });
-
-      return ctx.prisma.registrationDataApplication.update({
+      return ctx.prisma.registrationDataApplication.upsert({
         where: {
-          id: input.id,
+          applicationId: input.applicationId,
         },
-        data: {
+        create: {
+          userId: ctx.session.user.id,
+          ...input,
+        },
+        update: {
           userId: ctx.session.user.id,
           ...input,
         },

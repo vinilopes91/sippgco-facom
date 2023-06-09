@@ -4,6 +4,8 @@ export const createProcessSchema = z.object({
   name: z.string().min(1, "Campo obrigatório"),
   applicationStartDate: z.string().datetime("Data inválida"),
   applicationEndDate: z.string().datetime("Data inválida"),
+  analysisEndDate: z.string().datetime("Data inválida"),
+  editalLink: z.string().url("Link inválido"),
   regularMasterVacancies: z
     .number({
       invalid_type_error: "Campo inválido",

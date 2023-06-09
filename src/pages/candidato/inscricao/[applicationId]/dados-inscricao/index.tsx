@@ -5,13 +5,14 @@ import Base from "@/layout/Base";
 import ApplicationStepper from "@/components/ApplicationStepper";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  createRegistrationDataApplicationSchema,
-  type CreateRegistrationDataApplicationSchema,
+  finalizeRegistrationDataApplicationSchema,
+  type UpdateRegistrationDataApplicationSchema,
+  type FinalizeRegistrationDataApplicationSchema,
 } from "@/common/validation/registrationDataApplication";
 import { useForm } from "react-hook-form";
 import Select from "@/components/Select";
-import { Modality, VacancyType } from "@prisma/client";
-import { modalityMapper, vacancyTypeMapper } from "@/utils/mapper";
+import { Modality, ModalityType, VacancyType } from "@prisma/client";
+import { modalityMapper, modalityTypeMapper, vacancyTypeMapper } from "@/utils/mapper";
 import StepFileInput from "@/components/StepFileInput/StepFileInput";
 import { useEffect } from "react";
 import { handleTRPCError } from "@/utils/errors";
@@ -19,19 +20,35 @@ import { toast } from "react-hot-toast";
 import clsx from "clsx";
 import { filterProcessStepDocuments } from "@/utils/filterDocuments";
 import { isValidPeriod } from "@/utils/application";
+import TextArea from "@/components/TextArea";
 
 const RegistrationData: NextPage = () => {
   const router = useRouter();
   const ctx = api.useContext();
 
-  const { register, handleSubmit, formState, setValue, watch } =
-    useForm<CreateRegistrationDataApplicationSchema>({
-      resolver: zodResolver(createRegistrationDataApplicationSchema),
+  const { register, handleSubmit, formState, setValue, watch, trigger, getValues, clearErrors } =
+    useForm<FinalizeRegistrationDataApplicationSchema>({
+      resolver: zodResolver(finalizeRegistrationDataApplicationSchema),
     });
 
   const { errors } = formState;
 
-  const [modalityWatch, vacancyTypeWatch] = watch(["modality", "vacancyType"]);
+  const [modalityWatch, vacancyTypeWatch, modalityTypeWatch, researchLineWatch] = watch(["modality", "vacancyType", "modalityType", "researchLineId"]);
+
+  useEffect(() => {
+    if (modalityTypeWatch === "SPECIAL") {
+      setValue("scholarship", false);
+      setValue("specialStudent", false);
+    } else if (modalityTypeWatch === "REGULAR") {
+      setValue("tutors", undefined);
+    }
+  }, [modalityTypeWatch, setValue])
+
+  const { data: researchLine, isLoading: isLoadingResearchLine } = api.researchLine.get.useQuery({
+    id: researchLineWatch
+  }, {
+    enabled: !!researchLineWatch,
+  })
 
   const { data: applicationData, isLoading: isLoadingApplicationData } =
     api.application.getUserApplication.useQuery(
@@ -59,9 +76,9 @@ const RegistrationData: NextPage = () => {
   );
 
   const {
-    mutateAsync: createRegistrationDataApplication,
-    isLoading: creatingRegistrationDataApplication,
-  } = api.registrationDataApplication.create.useMutation({
+    mutateAsync: finalizeRegistrationDataApplication,
+    isLoading: finalizingRegistrationDataApplication,
+  } = api.registrationDataApplication.finalize.useMutation({
     onSuccess: () => {
       void ctx.application.getUserApplication.invalidate({
         applicationId: router.query.applicationId as string,
@@ -74,6 +91,7 @@ const RegistrationData: NextPage = () => {
   } = api.registrationDataApplication.update.useMutation({
     onSuccess: () => {
       toast.success("Dados da inscrição salvos com sucesso.");
+      clearErrors();
       void ctx.application.getUserApplication.invalidate({
         applicationId: router.query.applicationId as string,
       });
@@ -87,25 +105,33 @@ const RegistrationData: NextPage = () => {
     if (applicationData) {
       setValue("applicationId", applicationData.id);
       if (applicationData?.registrationDataApplication) {
-        setValue(
+        applicationData.registrationDataApplication.vacancyType && setValue(
           "vacancyType",
           applicationData.registrationDataApplication.vacancyType
         );
-        setValue(
+        applicationData.registrationDataApplication.modality && setValue(
           "modality",
           applicationData.registrationDataApplication.modality
         );
-        setValue(
+        applicationData.registrationDataApplication.modalityType && setValue(
+          "modalityType",
+          applicationData.registrationDataApplication.modalityType
+        );
+        applicationData.registrationDataApplication.researchLineId && setValue(
           "researchLineId",
           applicationData.registrationDataApplication.researchLineId
         );
-        setValue(
+        applicationData.registrationDataApplication.scholarship && setValue(
           "scholarship",
           applicationData.registrationDataApplication.scholarship
         );
-        setValue(
+        applicationData.registrationDataApplication.specialStudent && setValue(
           "specialStudent",
           applicationData.registrationDataApplication.specialStudent
+        );
+        applicationData.registrationDataApplication.tutors && setValue(
+          "tutors",
+          applicationData.registrationDataApplication.tutors
         );
       }
     }
@@ -123,9 +149,6 @@ const RegistrationData: NextPage = () => {
     return <div>404</div>;
   }
 
-  const registrationDataApplicationId =
-    applicationData.registrationDataApplication?.id;
-
   const userStepDocuments = filterProcessStepDocuments({
     documents: registrationDataDocuments,
     modality: modalityWatch,
@@ -137,7 +160,23 @@ const RegistrationData: NextPage = () => {
     (processDocument) => processDocument.document.required
   );
 
-  const onSubmit = async (data: CreateRegistrationDataApplicationSchema) => {
+  const handleClickSaveButton = async () => {
+    await trigger();
+    const formValues = getValues();
+
+    const updateInput: UpdateRegistrationDataApplicationSchema = formValues;
+    (Object.keys(updateInput) as (keyof typeof updateInput)[]).forEach(
+      (key) => {
+        if (!updateInput[key]) {
+          delete updateInput[key];
+        }
+      }
+    );
+
+    updateRegistrationDataApplication(updateInput);
+  };
+
+  const onSubmit = async (data: FinalizeRegistrationDataApplicationSchema) => {
     const disableSubmit = requiredDocuments.some((processDocument) => {
       const document = applicationData.UserDocumentApplication.find(
         (userDocument) => userDocument.documentId === processDocument.documentId
@@ -151,20 +190,13 @@ const RegistrationData: NextPage = () => {
       return;
     }
 
-    if (registrationDataApplicationId) {
-      updateRegistrationDataApplication({
-        id: registrationDataApplicationId,
-        ...data,
-      });
-    } else {
-      try {
-        await createRegistrationDataApplication(data);
-        await router.push(
-          `/candidato/inscricao/${applicationData.id}/dados-academicos`
-        );
-      } catch (error) {
-        handleTRPCError(error, "Erro ao registrar dados da inscrição");
-      }
+    try {
+      await finalizeRegistrationDataApplication(data);
+      await router.push(
+        `/candidato/inscricao/${applicationData.id}/dados-academicos`
+      );
+    } catch (error) {
+      handleTRPCError(error, "Erro ao registrar dados da inscrição");
     }
   };
 
@@ -188,7 +220,7 @@ const RegistrationData: NextPage = () => {
           <h2 className="text-2xl font-bold">{applicationData.process.name}</h2>
         </div>
         <div className="my-4 flex justify-center">
-          <ApplicationStepper currentStep={2} />
+          <ApplicationStepper currentStep={2} application={applicationData} />
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
@@ -228,6 +260,21 @@ const RegistrationData: NextPage = () => {
                 ))}
               </Select>
               <Select
+                name="modalityType"
+                label="Aluno Regular ou especial?"
+                register={register}
+                error={errors.modalityType}
+                required
+                disabled={!isValidApplicationPeriod}
+              >
+                <option value="">Selecione</option>
+                {Object.keys(ModalityType).map((modalityType) => (
+                  <option key={modalityType} value={modalityType}>
+                    {modalityTypeMapper[modalityType as keyof typeof ModalityType]}
+                  </option>
+                ))}
+              </Select>
+              <Select
                 name="researchLineId"
                 label="Linha de pesquisa"
                 placeholder="Linha de pesquisa"
@@ -246,7 +293,7 @@ const RegistrationData: NextPage = () => {
                 )}
               </Select>
             </div>
-            <div className="mt-2 flex items-center gap-2">
+            {modalityTypeWatch === "REGULAR" && <><div className="mt-2 flex items-center gap-2">
               <input
                 className="checkbox"
                 type="checkbox"
@@ -260,18 +307,39 @@ const RegistrationData: NextPage = () => {
                 para ingressar como aluno especial.
               </label>
             </div>
-            <div className="mt-2 flex items-center gap-2">
-              <input
-                className="checkbox"
-                type="checkbox"
-                id="scholarship"
-                disabled={!isValidApplicationPeriod}
-                {...register("scholarship")}
-              />
-              <label htmlFor="scholarship">
-                Tenho interesse em concorrer a bolsa de estudo.
-              </label>
-            </div>
+              <div className="mt-2 flex items-center gap-2">
+                <input
+                  className="checkbox"
+                  type="checkbox"
+                  id="scholarship"
+                  disabled={!isValidApplicationPeriod}
+                  {...register("scholarship")}
+                />
+                <label htmlFor="scholarship">
+                  Tenho interesse em concorrer a bolsa de estudo.
+                </label>
+              </div>
+            </>}
+
+            {modalityTypeWatch === "SPECIAL" && researchLineWatch &&
+              <>
+                <TextArea
+                  name="tutors"
+                  label="Rankear tutores da linha de pesquisa selecionada"
+                  placeholder="Indique ao menos um tutor e ranqueie sua escolha. Ex: 1- João, 2- Maria, 3- José"
+                  register={register}
+                  error={errors.tutors}
+                  maxLength={255}
+                  required
+                />
+                {isLoadingResearchLine ?
+                  <div className="animate-pulse h-10 w-full bg-slate-300" />
+                  :
+                  <p className="font-medium">Lista de tutores: <span className="font-normal">{researchLine?.TutorResearchLine.map((tutor) => tutor.name).join(", ")}</span></p>
+                }
+                <p className="font-medium text-red-500">Obs: A indicação não necessariamente vai ser seguida pela ordem do candidato.</p>
+              </>
+            }
           </div>
 
           {isLoadingRegistrationDataDocuments && (
@@ -282,6 +350,14 @@ const RegistrationData: NextPage = () => {
                 <div className="h-[30px] w-full rounded bg-slate-200"></div>
                 <div className="h-[30px] w-full rounded bg-slate-200"></div>
               </div>
+            </div>
+          )}
+          {(!modalityWatch || !vacancyTypeWatch) && (
+            <div>
+              <p className="font-medium">
+                * Selecione o tipo e modalidade de vaga para carregar os
+                documentos necessários
+              </p>
             </div>
           )}
           {modalityWatch &&
@@ -302,36 +378,49 @@ const RegistrationData: NextPage = () => {
                 </div>
               </div>
             )}
-          <div className="flex items-center justify-end">
-            {registrationDataApplicationId ? (
+
+
+          <div className="mt-5 flex items-center justify-between gap-2">
+            <button
+              className="btn-primary btn w-36"
+              onClick={() =>
+                router.push(
+                  `/candidato/inscricao/${applicationData.id}/dados-pessoais`
+                )
+              }
+              type="button"
+            >
+              Voltar
+            </button>
+            <div className="flex items-center gap-2">
               <button
                 className={clsx(
-                  "btn-primary btn w-36",
+                  "btn-primary btn",
                   updatingRegistrationDataApplication && "loading"
                 )}
                 disabled={
                   !isValidApplicationPeriod ||
                   updatingRegistrationDataApplication
                 }
-                type="submit"
+                type="button"
+                onClick={handleClickSaveButton}
               >
-                Salvar
+                Salvar dados
               </button>
-            ) : (
               <button
                 className={clsx(
-                  "btn-primary btn w-36",
-                  creatingRegistrationDataApplication && "loading"
+                  "btn-primary btn",
+                  finalizingRegistrationDataApplication && "loading"
                 )}
                 disabled={
                   !isValidApplicationPeriod ||
-                  creatingRegistrationDataApplication
+                  finalizingRegistrationDataApplication
                 }
                 type="submit"
               >
-                Avançar
+                Finalizar etapa
               </button>
-            )}
+            </div>
           </div>
           {!isValidApplicationPeriod && (
             <p className="text-right text-sm text-red-500">

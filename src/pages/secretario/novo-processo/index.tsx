@@ -95,6 +95,13 @@ const NewProcess: NextPage = () => {
                 name="name"
                 register={register}
                 error={errors.name}
+                required
+              />
+              <Input
+                label="Link para o edital"
+                name="editalLink"
+                register={register}
+                error={errors.editalLink}
               />
               <Input
                 type="date"
@@ -106,6 +113,7 @@ const NewProcess: NextPage = () => {
                     value && new Date(value).toISOString(),
                 }}
                 error={errors.applicationStartDate}
+                required
               />
               <Input
                 type="date"
@@ -117,7 +125,26 @@ const NewProcess: NextPage = () => {
                     value && new Date(value).toISOString(),
                 }}
                 error={errors.applicationEndDate}
+                required
               />
+              <div className="flex flex-col">
+                <Input
+                  type="date"
+                  label="Data final da análise de documentos"
+                  name="analysisEndDate"
+                  register={register}
+                  registerOptions={{
+                    setValueAs: (value: string) =>
+                      value && new Date(value).toISOString(),
+                  }}
+                  error={errors.applicationEndDate}
+                  required
+                />
+                <p>
+                  Data limite de análise de documentos incluindo o prazo de
+                  recursos
+                </p>
+              </div>
             </div>
           </div>
 
@@ -134,6 +161,7 @@ const NewProcess: NextPage = () => {
                   valueAsNumber: true,
                 }}
                 error={errors.regularMasterVacancies}
+                required
               />
               <Input
                 label="Mestrato especial"
@@ -145,6 +173,7 @@ const NewProcess: NextPage = () => {
                   valueAsNumber: true,
                 }}
                 error={errors.specialMasterVacancies}
+                required
               />
               <Input
                 label="Doutorado"
@@ -156,6 +185,7 @@ const NewProcess: NextPage = () => {
                   valueAsNumber: true,
                 }}
                 error={errors.regularDoctorateVacancies}
+                required
               />
             </div>
           </div>
