@@ -136,10 +136,7 @@ const UserApplication: NextPage = () => {
       toast.error("Período de inscrição ainda não acabou");
       return;
     }
-    if (!isValidAnalysisPeriod) {
-      toast.error("Período de análise já se encerrou");
-      return;
-    }
+
     setOpenRejectModal(true);
   };
 
@@ -152,10 +149,7 @@ const UserApplication: NextPage = () => {
       toast.error("Período de inscrição ainda não acabou");
       return;
     }
-    if (!isValidAnalysisPeriod) {
-      toast.error("Período de análise já se encerrou");
-      return;
-    }
+
     setOpenApproveModal(true);
   };
 
@@ -175,6 +169,11 @@ const UserApplication: NextPage = () => {
             </span>
           )}
         </div>
+        {application.reasonForRejection && (
+          <p className="font-medium text-red-500">
+            Motivo da rejeição: {application.reasonForRejection}
+          </p>
+        )}
         <div className="mt-5">
           <h3 className="text-xl font-medium">Dados pessoais</h3>
           {application.personalDataApplication && (
