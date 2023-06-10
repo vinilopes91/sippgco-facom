@@ -1,10 +1,6 @@
 import { prisma } from "@/server/db";
 import { NextResponse } from "next/server";
 
-export const config = {
-  runtime: "edge",
-};
-
 export default async function handler() {
   const applications = await prisma.application.updateMany({
     where: {

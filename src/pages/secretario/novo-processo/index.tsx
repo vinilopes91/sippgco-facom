@@ -140,8 +140,8 @@ const NewProcess: NextPage = () => {
                   error={errors.applicationEndDate}
                   required
                 />
-                <p>
-                  Data limite de análise de documentos incluindo o prazo de
+                <p className="font-medium text-error">
+                  *Data limite de análise de documentos incluindo o prazo de
                   recursos
                 </p>
               </div>
