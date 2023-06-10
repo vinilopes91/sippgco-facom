@@ -79,11 +79,18 @@ const CurriculumFileInput = ({
 
   const handleClickSaveButton = async () => {
     if (!userDocument?.id) return;
-    await updateUserDocumentApplication({
-      id: userDocument.id,
-      quantity: quantity && !isNaN(quantity) ? quantity : undefined,
+    try {
+      await updateUserDocumentApplication({
+        id: userDocument.id,
+        quantity: quantity && !isNaN(quantity) ? quantity : undefined,
+      });
+      toast.success("Documento atualizado");
+    } catch (error) {
+      toast.error("Erro ao atualizar documento");
+    }
+    await ctx.application.getUserApplication.invalidate({
+      applicationId: applicationData.id,
     });
-    await ctx.application.invalidate();
   };
 
   const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -122,7 +129,9 @@ const CurriculumFileInput = ({
           filename: e.target.files![0]!.name,
           quantity: quantity && !isNaN(quantity) ? quantity : undefined,
         });
-        await ctx.application.invalidate();
+        await ctx.application.getUserApplication.invalidate({
+          applicationId: applicationData.id,
+        });
         if (fileInputRef.current) fileInputRef.current.value = "";
       } else {
         await createUserDocumentApplication({
@@ -133,7 +142,9 @@ const CurriculumFileInput = ({
           filename: e.target.files![0]!.name,
           quantity: quantity && !isNaN(quantity) ? quantity : undefined,
         });
-        await ctx.application.invalidate();
+        await ctx.application.getUserApplication.invalidate({
+          applicationId: applicationData.id,
+        });
         if (fileInputRef.current) fileInputRef.current.value = "";
       }
     } catch (error) {
@@ -157,7 +168,9 @@ const CurriculumFileInput = ({
     deleteUserDocument({
       id: userDocument.id,
     });
-    await ctx.application.invalidate();
+    await ctx.application.getUserApplication.invalidate({
+      applicationId: applicationData.id,
+    });
   };
 
   const getDocumentStatusIcon = (status?: AnalysisStatus) => {
@@ -190,10 +203,7 @@ const CurriculumFileInput = ({
   };
 
   const disableSaveButton =
-    isUpdatingUserDocument ||
-    !quantity ||
-    !userDocument?.key ||
-    userDocument?.quantity === quantity;
+    isUpdatingUserDocument || !quantity || !userDocument?.key;
 
   return (
     <div className="flex flex-col gap-2" key={documentId}>

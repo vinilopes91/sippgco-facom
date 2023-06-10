@@ -80,6 +80,19 @@ const Curriculum: NextPage = () => {
     applicationEndDate: applicationData.process.applicationEndDate,
   });
 
+  const possibleScore = applicationData.UserDocumentApplication.filter(
+    (userDocument) => userDocument.step === "CURRICULUM"
+  ).reduce((acc, curr) => {
+    if (curr.quantity && curr.document.score && curr.document.maximumScore) {
+      const documentScore =
+        curr.quantity * curr.document.score > curr.document.maximumScore
+          ? curr.document.maximumScore
+          : curr.quantity * curr.document.score;
+      return acc + documentScore;
+    }
+    return acc;
+  }, 0);
+
   return (
     <Base
       pageTitle="Minhas candidaturas"
@@ -118,6 +131,14 @@ const Curriculum: NextPage = () => {
             />
           ))}
         </div>
+
+        <div className="divider" />
+
+        <p className="text-right font-medium">
+          Pontuação total possível:{" "}
+          <span className="text-lg">{possibleScore}</span>
+        </p>
+
         <div className="mt-[50px] flex w-full items-center justify-between gap-2">
           <button
             className="btn-primary btn w-36"

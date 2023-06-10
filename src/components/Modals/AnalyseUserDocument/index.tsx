@@ -43,6 +43,7 @@ const AnalyseUserDocument = (
           applicationId: userDocument.applicationId,
         });
         toast.success("Analise registrada");
+        reset();
         handleCloseModal();
       },
       onError: (e) => {
@@ -55,7 +56,7 @@ const AnalyseUserDocument = (
 
   useEffect(() => {
     setValue("id", userDocument.id);
-  }, [setValue, userDocument.id]);
+  }, [setValue, userDocument.id, open]);
 
   const handleCloseModal = () => {
     reset();

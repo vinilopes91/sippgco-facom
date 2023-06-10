@@ -15,6 +15,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { isAfter } from "date-fns";
+import { type UserDocumentApplication } from "@prisma/client";
 
 const BUCKET_NAME = "zeca-pagodinho";
 const UPLOADING_TIME_LIMIT = 30; // 30 seconds
@@ -161,34 +162,48 @@ export const userDocumentRouter = createTRPCRouter({
       if (
         isAfter(
           new Date(),
-          new Date(
-            userDocumentApplication.application.process.applicationEndDate
-          )
+          new Date(userDocumentApplication.application.process.analysisEndDate)
         )
       ) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Período de inscrição encerrado",
+          message: "Período de análise encerrado",
         });
       }
 
       if (userDocumentApplication.application.status) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "A inscrição já foi analisada",
+          message:
+            "Não é possível analisar o documento pois a inscrição já foi analisada",
         });
       }
 
-      const updatedUserDocumentApplication =
-        await ctx.prisma.userDocumentApplication.update({
-          where: {
-            id: input.id,
-          },
-          data: {
-            status: input.status,
-            reasonForRejection: input.reasonForRejection,
-          },
-        });
+      let updatedUserDocumentApplication: UserDocumentApplication;
+
+      if (input.status === "APPROVED") {
+        updatedUserDocumentApplication =
+          await ctx.prisma.userDocumentApplication.update({
+            where: {
+              id: input.id,
+            },
+            data: {
+              status: input.status,
+              reasonForRejection: null,
+            },
+          });
+      } else {
+        updatedUserDocumentApplication =
+          await ctx.prisma.userDocumentApplication.update({
+            where: {
+              id: input.id,
+            },
+            data: {
+              status: input.status,
+              reasonForRejection: input.reasonForRejection,
+            },
+          });
+      }
 
       return updatedUserDocumentApplication;
     }),

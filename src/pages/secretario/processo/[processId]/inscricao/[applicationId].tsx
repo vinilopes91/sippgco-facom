@@ -7,8 +7,12 @@ import AcceptApplication from "@/components/Modals/AcceptApplication";
 import RejectApplication from "@/components/Modals/RejectApplication";
 import Base from "@/layout/Base";
 import { api } from "@/utils/api";
-import { modalityMapper, vacancyTypeMapper } from "@/utils/mapper";
-import { maskPhoneNumber } from "@/utils/mask";
+import {
+  modalityMapper,
+  modalityTypeMapper,
+  vacancyTypeMapper,
+} from "@/utils/mapper";
+import { formatCEP, maskCpf, maskPhoneNumber } from "@/utils/mask";
 import {
   CheckCircleIcon,
   ExclamationCircleIcon,
@@ -24,6 +28,7 @@ import { toast } from "react-hot-toast";
 import { analysisStatusMapper } from "@/utils/mapper";
 import { isValidPeriod } from "@/utils/application";
 import clsx from "clsx";
+import { isBefore } from "date-fns";
 
 const UserApplication: NextPage = () => {
   const [userDocumentSelected, setUserDocumentSelected] = useState<
@@ -117,6 +122,11 @@ const UserApplication: NextPage = () => {
     applicationStartDate: application.process.applicationStartDate,
   });
 
+  const isValidAnalysisPeriod = isBefore(
+    new Date(),
+    new Date(application.process.analysisEndDate)
+  );
+
   const handleClickRejectButton = () => {
     if (!allDocumentsAnalysed) {
       toast.error("Todos os documentos devem ser analisados");
@@ -124,6 +134,10 @@ const UserApplication: NextPage = () => {
     }
     if (isValidApplicationPeriod) {
       toast.error("Período de inscrição ainda não acabou");
+      return;
+    }
+    if (!isValidAnalysisPeriod) {
+      toast.error("Período de análise já se encerrou");
       return;
     }
     setOpenRejectModal(true);
@@ -136,6 +150,10 @@ const UserApplication: NextPage = () => {
     }
     if (isValidApplicationPeriod) {
       toast.error("Período de inscrição ainda não acabou");
+      return;
+    }
+    if (!isValidAnalysisPeriod) {
+      toast.error("Período de análise já se encerrou");
       return;
     }
     setOpenApproveModal(true);
@@ -172,7 +190,105 @@ const UserApplication: NextPage = () => {
               <p className="font-medium">
                 Telefone:{" "}
                 <span className="font-normal">
-                  {application.personalDataApplication.phone && maskPhoneNumber(application.personalDataApplication.phone)}
+                  {application.personalDataApplication.phone &&
+                    maskPhoneNumber(application.personalDataApplication.phone)}
+                </span>
+              </p>
+              <p className="font-medium">
+                Celular:{" "}
+                <span className="font-normal">
+                  {application.personalDataApplication.mobilePhone &&
+                    maskPhoneNumber(
+                      application.personalDataApplication.mobilePhone
+                    )}
+                </span>
+              </p>
+              <p className="font-medium">
+                Celular é WhatsApp?{" "}
+                <span className="font-normal">
+                  {application.personalDataApplication.isWhatsApp
+                    ? "Sim"
+                    : "Não"}
+                </span>
+              </p>
+              <p className="font-medium">
+                CPF:{" "}
+                <span className="font-normal">
+                  {application.personalDataApplication.cpf &&
+                    maskCpf(application.personalDataApplication.cpf)}
+                </span>
+              </p>
+              <p className="font-medium">
+                Número RG:{" "}
+                <span className="font-normal">
+                  {application.personalDataApplication.rgNumber}
+                </span>
+              </p>
+              <p className="font-medium">
+                Orgão emissor do RG:{" "}
+                <span className="font-normal">
+                  {application.personalDataApplication.rgOrg}
+                </span>
+              </p>
+              <p className="font-medium">
+                Estado emisso do RG:{" "}
+                <span className="font-normal">
+                  {application.personalDataApplication.rgState}
+                </span>
+              </p>
+              <p className="font-medium">
+                Data de nascimento:{" "}
+                <span className="font-normal">
+                  {application.personalDataApplication.birthDate?.toLocaleDateString()}
+                </span>
+              </p>
+              <p className="font-medium">
+                Nacionalidade:{" "}
+                <span className="font-normal">
+                  {application.personalDataApplication.nationality}
+                </span>
+              </p>
+              <p className="font-medium">
+                CEP:{" "}
+                <span className="font-normal">
+                  {application.personalDataApplication.cep &&
+                    formatCEP(application.personalDataApplication.cep)}
+                </span>
+              </p>
+              <p className="font-medium">
+                Logradouro:{" "}
+                <span className="font-normal">
+                  {application.personalDataApplication.street}
+                </span>
+              </p>
+              <p className="font-medium">
+                Número:{" "}
+                <span className="font-normal">
+                  {application.personalDataApplication.number}
+                </span>
+              </p>
+              <p className="font-medium">
+                Complemento:{" "}
+                <span className="font-normal">
+                  {application.personalDataApplication.complement ?? "--"}
+                </span>
+              </p>
+              <p className="font-medium">
+                Bairro:{" "}
+                <span className="font-normal">
+                  {application.personalDataApplication.neighborhood}
+                </span>
+              </p>
+              <p className="font-medium">
+                Estado:{" "}
+                <span className="font-normal">
+                  {application.personalDataApplication.state}
+                </span>
+              </p>
+              <p className="font-medium">
+                Cidade:{" "}
+                <span className="font-normal">
+                  {application.personalDataApplication.city}
                 </span>
               </p>
             </div>
@@ -188,21 +304,28 @@ const UserApplication: NextPage = () => {
               <p className="font-medium">
                 Tipo de vaga:{" "}
                 <span className="font-normal">
-                  {
-                    application.registrationDataApplication.vacancyType && vacancyTypeMapper[
+                  {application.registrationDataApplication.vacancyType &&
+                    vacancyTypeMapper[
                       application.registrationDataApplication.vacancyType
-                    ]
-                  }
+                    ]}
                 </span>
               </p>
               <p className="font-medium">
                 Modalidade de vaga:{" "}
                 <span className="font-normal">
-                  {
-                    application.registrationDataApplication.modality && modalityMapper[
+                  {application.registrationDataApplication.modality &&
+                    modalityMapper[
                       application.registrationDataApplication.modality
-                    ]
-                  }
+                    ]}
+                </span>
+              </p>
+              <p className="font-medium">
+                Aluno Regular ou especial?{" "}
+                <span className="font-normal">
+                  {application.registrationDataApplication.modalityType &&
+                    modalityTypeMapper[
+                      application.registrationDataApplication.modalityType
+                    ]}
                 </span>
               </p>
               <p className="font-medium">
@@ -211,23 +334,37 @@ const UserApplication: NextPage = () => {
                   {application.registrationDataApplication.researchLine?.name}
                 </span>
               </p>
-              <p className="font-medium">
-                Concorre como aluno especial?{" "}
-                <span className="font-normal">
-                  {application.registrationDataApplication.specialStudent
-                    ? "Sim"
-                    : "Não"}
-                </span>
-              </p>
-              <p className="font-medium">
-                Tem interesse em bolsa de estudo?{" "}
-                <span className="font-normal">
-                  {application.registrationDataApplication.scholarship
-                    ? "Sim"
-                    : "Não"}
-                </span>
-              </p>
+              {application.registrationDataApplication.modalityType ===
+                "REGULAR" && (
+                <>
+                  <p className="font-medium">
+                    Concorre como aluno especial?{" "}
+                    <span className="font-normal">
+                      {application.registrationDataApplication.specialStudent
+                        ? "Sim"
+                        : "Não"}
+                    </span>
+                  </p>
+                  <p className="font-medium">
+                    Tem interesse em bolsa de estudo?{" "}
+                    <span className="font-normal">
+                      {application.registrationDataApplication.scholarship
+                        ? "Sim"
+                        : "Não"}
+                    </span>
+                  </p>
+                </>
+              )}
             </div>
+          )}
+          {application.registrationDataApplication?.modalityType ===
+            "SPECIAL" && (
+            <p className="mt-2 font-medium">
+              Indicação de tutores:{" "}
+              <span className="font-normal">
+                {application.registrationDataApplication?.tutors}
+              </span>
+            </p>
           )}
         </div>
 
@@ -244,7 +381,7 @@ const UserApplication: NextPage = () => {
                 </span>
               </p>
               <p className="font-medium">
-                Ano ou previsão de conclusão do curso de graduação:{" "}
+                Ano ou previsão de conclusão da graduação:{" "}
                 <span className="font-normal">
                   {
                     application.academicDataApplication
@@ -258,6 +395,31 @@ const UserApplication: NextPage = () => {
                   {application.academicDataApplication.institutionCourse}
                 </span>
               </p>
+              {application.academicDataApplication.area && (
+                <>
+                  <p className="font-medium">
+                    Área de mestrado:{" "}
+                    <span className="font-normal">
+                      {application.academicDataApplication.area}
+                    </span>
+                  </p>
+                  <p className="font-medium">
+                    Ano ou previsão de conclusão do mestrado:{" "}
+                    <span className="font-normal">
+                      {
+                        application.academicDataApplication
+                          .completionOrForecastYearArea
+                      }
+                    </span>
+                  </p>
+                  <p className="font-medium">
+                    Instituição do mestrado:{" "}
+                    <span className="font-normal">
+                      {application.academicDataApplication.institutionArea}
+                    </span>
+                  </p>
+                </>
+              )}
               <p className="font-medium">
                 Foi aluno especial?{" "}
                 <span className="font-normal">
@@ -283,7 +445,7 @@ const UserApplication: NextPage = () => {
                     personalDataDocuments.map((userDocument) => (
                       <>
                         <div
-                          className="flex items-center"
+                          className="flex items-center gap-2"
                           key={userDocument.id}
                         >
                           <div className="basis-[34px]">
@@ -292,7 +454,7 @@ const UserApplication: NextPage = () => {
                             )}
                           </div>
                           <FileLink userDocument={userDocument} />
-                          {isValidApplicationPeriod && (
+                          {isValidAnalysisPeriod && (
                             <button
                               className="btn-primary btn-sm btn"
                               onClick={() =>
@@ -316,7 +478,7 @@ const UserApplication: NextPage = () => {
                       </>
                     ))
                   ) : (
-                    <p>Nehum documento enviado</p>
+                    <p>Sem documentos.</p>
                   )}
                 </div>
               </div>
@@ -327,7 +489,7 @@ const UserApplication: NextPage = () => {
                     registrationDataDocuments.map((userDocument) => (
                       <>
                         <div
-                          className="flex items-center"
+                          className="flex items-center gap-2"
                           key={userDocument.id}
                         >
                           <div className="basis-[34px]">
@@ -336,7 +498,7 @@ const UserApplication: NextPage = () => {
                             )}
                           </div>
                           <FileLink userDocument={userDocument} />
-                          {isValidApplicationPeriod && (
+                          {isValidAnalysisPeriod && (
                             <button
                               className="btn-primary btn-sm btn"
                               onClick={() =>
@@ -360,7 +522,7 @@ const UserApplication: NextPage = () => {
                       </>
                     ))
                   ) : (
-                    <p>Nehum documento enviado</p>
+                    <p>Sem documentos.</p>
                   )}
                 </div>
               </div>
@@ -371,7 +533,7 @@ const UserApplication: NextPage = () => {
                     academicDataDocuments.map((userDocument) => (
                       <>
                         <div
-                          className="flex items-center"
+                          className="flex items-center gap-2"
                           key={userDocument.id}
                         >
                           <div className="basis-[34px]">
@@ -380,7 +542,7 @@ const UserApplication: NextPage = () => {
                             )}
                           </div>
                           <FileLink userDocument={userDocument} />
-                          {isValidApplicationPeriod && (
+                          {isValidAnalysisPeriod && (
                             <button
                               className="btn-primary btn-sm btn"
                               onClick={() =>
@@ -404,7 +566,7 @@ const UserApplication: NextPage = () => {
                       </>
                     ))
                   ) : (
-                    <p>Nehum documento enviado</p>
+                    <p>Sem documentos.</p>
                   )}
                 </div>
               </div>
@@ -415,7 +577,7 @@ const UserApplication: NextPage = () => {
                     curriculumDocuments.map((userDocument) => (
                       <>
                         <div
-                          className="flex items-center"
+                          className="flex items-center gap-2"
                           key={userDocument.id}
                         >
                           <div className="basis-[34px]">
@@ -424,7 +586,7 @@ const UserApplication: NextPage = () => {
                             )}
                           </div>
                           <FileLink userDocument={userDocument} />
-                          {isValidApplicationPeriod && (
+                          {isValidAnalysisPeriod && (
                             <button
                               className="btn-primary btn-sm btn"
                               onClick={() =>
@@ -448,7 +610,7 @@ const UserApplication: NextPage = () => {
                       </>
                     ))
                   ) : (
-                    <p>Nehum documento enviado</p>
+                    <p>Sem documentos.</p>
                   )}
                 </div>
               </div>

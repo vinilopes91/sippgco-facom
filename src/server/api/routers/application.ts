@@ -8,7 +8,7 @@ import { validateApplicationPeriodRequest } from "@/server/utils/validateApplica
 import { filterProcessStepDocuments } from "@/utils/filterDocuments";
 import { AnalysisStatus } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
-import { isBefore } from "date-fns";
+import { isAfter, isBefore } from "date-fns";
 import { z } from "zod";
 
 export const applicationRouter = createTRPCRouter({
@@ -66,7 +66,11 @@ export const applicationRouter = createTRPCRouter({
           personalDataApplication: true,
           registrationDataApplication: true,
           academicDataApplication: true,
-          UserDocumentApplication: true,
+          UserDocumentApplication: {
+            include: {
+              document: true,
+            },
+          },
         },
       });
 
@@ -408,10 +412,11 @@ export const applicationRouter = createTRPCRouter({
         });
       }
 
-      if (application.status) {
+      if (isAfter(new Date(), new Date(application.process.analysisEndDate))) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Inscrição já analisada",
+          message:
+            "Período de análise de inscrições do processo já foi encerrado",
         });
       }
 
