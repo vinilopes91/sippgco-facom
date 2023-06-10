@@ -285,6 +285,22 @@ const ProcessDetail: NextPage = () => {
           </table>
         </div>
 
+        {enableAnnounceButton && (
+          <button
+            className={clsx(
+              "btn-primary btn mt-6",
+              isFinishingProcessApplications && "loading"
+            )}
+            onClick={() =>
+              finishProcessApplications({
+                id: processData.id,
+              })
+            }
+          >
+            Divulgar resultado das inscrições
+          </button>
+        )}
+
         <h2 className="mt-3 text-2xl font-bold">Linhas de pesquisa</h2>
         <div className="mt-2 overflow-x-auto">
           <table className="table w-full">
@@ -395,21 +411,6 @@ const ProcessDetail: NextPage = () => {
             </tbody>
           </table>
         </div>
-        {enableAnnounceButton && (
-          <button
-            className={clsx(
-              "btn-primary btn mt-6",
-              isFinishingProcessApplications && "loading"
-            )}
-            onClick={() =>
-              finishProcessApplications({
-                id: processData.id,
-              })
-            }
-          >
-            Divulgar resultado das inscrições
-          </button>
-        )}
       </div>
     </Base>
   );
