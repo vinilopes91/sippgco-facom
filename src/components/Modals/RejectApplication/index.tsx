@@ -53,7 +53,7 @@ const RejectApplication = (
 
   return (
     <BaseModal onClose={handleCloseModal} open={open} disableClickOutside>
-      <h3 className="text-3xl font-bold">Deferir candidatura</h3>
+      <h3 className="text-3xl font-bold">Rejeitar candidatura</h3>
       <button
         className="btn-ghost btn-sm btn-circle btn absolute right-2 top-2"
         onClick={handleCloseModal}
