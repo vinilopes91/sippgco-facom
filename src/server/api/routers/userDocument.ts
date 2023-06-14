@@ -65,6 +65,8 @@ export const userDocumentRouter = createTRPCRouter({
           data: {
             userId: ctx.session.user.id,
             ...input,
+            status: null,
+            reasonForRejection: null,
           },
         });
 
