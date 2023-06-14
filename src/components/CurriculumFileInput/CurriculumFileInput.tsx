@@ -98,6 +98,11 @@ const CurriculumFileInput = ({
       return;
     }
 
+    if (e.target.files && e.target.files[0]?.type !== "application/pdf") {
+      toast.error("O arquivo deve ser um PDF");
+      return;
+    }
+
     const data = {
       "Content-Type": e.target.files![0]!.type,
       file: e.target.files![0]!,

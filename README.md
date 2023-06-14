@@ -1,28 +1,21 @@
-# Create T3 App
+# Sistema de inscrições do programa de pós-graduação
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+O Sistema de inscrições do programa de pós-graduação é uma aplicação web desenvolvida com o objetivo de facilitar o processo de candidatura ao Programa de Pós-Graduação da FACOM. O sistema foi implementado utilizando uma combinação de tecnologias modernas, incluindo Next.js, tailwindcss, daisyui, tRCP, NextAuth, Prisma e zod.
 
-## What's next? How do I make an app with this?
+## Tecnologias Utilizadas
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+O desenvolvimento do sistema foi baseado nas seguintes tecnologias:
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+- **Next.js**: É um framework de desenvolvimento web em React que facilita a criação de aplicativos web rápidos e eficientes.
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+- **Tailwind CSS**: É uma biblioteca de utilitários CSS altamente personalizável, que permite a construção rápida e flexível de interfaces modernas.
 
-## Learn More
+- **daisyUI**: É um conjunto de componentes prontos para uso, construído sobre o tailwindcss, que agiliza o desenvolvimento de interfaces atraentes e responsivas.
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+- **tRPC**: O tRPC permite que você crie e consuma facilmente APIs totalmente seguras sem esquemas ou geração de código.
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+- **NextAuth.js**: É uma biblioteca de autenticação para aplicações Next.js, que facilita a implementação de autenticação segura e personalizável.
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+- **Prisma**: É um ORM (Object-Relational Mapping) moderno e poderoso para bancos de dados, utilizado para interagir com o banco de dados de forma simplificada.
 
-## How do I deploy this?
-
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+- **zod**: É uma biblioteca de validação de esquemas, utilizada para validar e garantir a integridade dos dados no sistema.
