@@ -42,7 +42,7 @@ const ResearchLineTable = ({
             )}
           </th>
           <th>Nome</th>
-          <th className="w-10/12">Tutores</th>
+          <th className="w-10/12">Docentes</th>
         </tr>
       </thead>
       <tbody>

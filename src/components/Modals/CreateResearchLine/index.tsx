@@ -125,8 +125,8 @@ const CreateResearchLineModal = (
           <div className="flex w-full items-end gap-1">
             <ControlledInput
               name="tutor"
-              label="Nome do Tutor"
-              placeholder="Tutor"
+              label="Nome do Docente"
+              placeholder="Docente"
               value={tutorName}
               onChange={handleTutorInput}
               errorMessage={errors.tutors?.message}
@@ -145,8 +145,8 @@ const CreateResearchLineModal = (
           </div>
         </div>
 
-        <p className="mt-4 font-medium">Tutores:</p>
-        {tutorList.length === 0 && <p>Nenhum tutor adicionado</p>}
+        <p className="mt-4 font-medium">Docentes:</p>
+        {tutorList.length === 0 && <p>Nenhum docente adicionado</p>}
 
         {tutorList.map((tutor) => (
           <div key={tutor.id} className="flex items-center gap-1">
