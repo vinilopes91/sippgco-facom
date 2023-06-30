@@ -12,7 +12,11 @@ import {
 import { useForm } from "react-hook-form";
 import Select from "@/components/Select";
 import { Modality, ModalityType, VacancyType } from "@prisma/client";
-import { modalityMapper, modalityTypeMapper, vacancyTypeMapper } from "@/utils/mapper";
+import {
+  modalityMapper,
+  modalityTypeMapper,
+  vacancyTypeMapper,
+} from "@/utils/mapper";
 import StepFileInput from "@/components/StepFileInput/StepFileInput";
 import { useEffect } from "react";
 import { handleTRPCError } from "@/utils/errors";
@@ -26,14 +30,27 @@ const RegistrationData: NextPage = () => {
   const router = useRouter();
   const ctx = api.useContext();
 
-  const { register, handleSubmit, formState, setValue, watch, trigger, getValues, clearErrors } =
-    useForm<FinalizeRegistrationDataApplicationSchema>({
-      resolver: zodResolver(finalizeRegistrationDataApplicationSchema),
-    });
+  const {
+    register,
+    handleSubmit,
+    formState,
+    setValue,
+    watch,
+    trigger,
+    getValues,
+    clearErrors,
+  } = useForm<FinalizeRegistrationDataApplicationSchema>({
+    resolver: zodResolver(finalizeRegistrationDataApplicationSchema),
+  });
 
   const { errors } = formState;
 
-  const [modalityWatch, vacancyTypeWatch, modalityTypeWatch, researchLineWatch] = watch(["modality", "vacancyType", "modalityType", "researchLineId"]);
+  const [
+    modalityWatch,
+    vacancyTypeWatch,
+    modalityTypeWatch,
+    researchLineWatch,
+  ] = watch(["modality", "vacancyType", "modalityType", "researchLineId"]);
 
   useEffect(() => {
     if (modalityTypeWatch === "SPECIAL") {
@@ -42,13 +59,17 @@ const RegistrationData: NextPage = () => {
     } else if (modalityTypeWatch === "REGULAR") {
       setValue("tutors", undefined);
     }
-  }, [modalityTypeWatch, setValue])
+  }, [modalityTypeWatch, setValue]);
 
-  const { data: researchLine, isLoading: isLoadingResearchLine } = api.researchLine.get.useQuery({
-    id: researchLineWatch
-  }, {
-    enabled: !!researchLineWatch,
-  })
+  const { data: researchLine, isLoading: isLoadingResearchLine } =
+    api.researchLine.get.useQuery(
+      {
+        id: researchLineWatch,
+      },
+      {
+        enabled: !!researchLineWatch,
+      }
+    );
 
   const { data: applicationData, isLoading: isLoadingApplicationData } =
     api.application.getUserApplication.useQuery(
@@ -105,34 +126,41 @@ const RegistrationData: NextPage = () => {
     if (applicationData) {
       setValue("applicationId", applicationData.id);
       if (applicationData?.registrationDataApplication) {
-        applicationData.registrationDataApplication.vacancyType && setValue(
-          "vacancyType",
-          applicationData.registrationDataApplication.vacancyType
-        );
-        applicationData.registrationDataApplication.modality && setValue(
-          "modality",
-          applicationData.registrationDataApplication.modality
-        );
-        applicationData.registrationDataApplication.modalityType && setValue(
-          "modalityType",
-          applicationData.registrationDataApplication.modalityType
-        );
-        applicationData.registrationDataApplication.researchLineId && setValue(
-          "researchLineId",
-          applicationData.registrationDataApplication.researchLineId
-        );
-        applicationData.registrationDataApplication.scholarship && setValue(
-          "scholarship",
-          applicationData.registrationDataApplication.scholarship
-        );
-        applicationData.registrationDataApplication.specialStudent && setValue(
-          "specialStudent",
-          applicationData.registrationDataApplication.specialStudent
-        );
-        applicationData.registrationDataApplication.tutors && setValue(
-          "tutors",
-          applicationData.registrationDataApplication.tutors
-        );
+        applicationData.registrationDataApplication.vacancyType &&
+          setValue(
+            "vacancyType",
+            applicationData.registrationDataApplication.vacancyType
+          );
+        applicationData.registrationDataApplication.modality &&
+          setValue(
+            "modality",
+            applicationData.registrationDataApplication.modality
+          );
+        applicationData.registrationDataApplication.modalityType &&
+          setValue(
+            "modalityType",
+            applicationData.registrationDataApplication.modalityType
+          );
+        applicationData.registrationDataApplication.researchLineId &&
+          setValue(
+            "researchLineId",
+            applicationData.registrationDataApplication.researchLineId
+          );
+        applicationData.registrationDataApplication.scholarship &&
+          setValue(
+            "scholarship",
+            applicationData.registrationDataApplication.scholarship
+          );
+        applicationData.registrationDataApplication.specialStudent &&
+          setValue(
+            "specialStudent",
+            applicationData.registrationDataApplication.specialStudent
+          );
+        applicationData.registrationDataApplication.tutors &&
+          setValue(
+            "tutors",
+            applicationData.registrationDataApplication.tutors
+          );
       }
     }
   }, [applicationData, setValue]);
@@ -270,7 +298,11 @@ const RegistrationData: NextPage = () => {
                 <option value="">Selecione</option>
                 {Object.keys(ModalityType).map((modalityType) => (
                   <option key={modalityType} value={modalityType}>
-                    {modalityTypeMapper[modalityType as keyof typeof ModalityType]}
+                    {
+                      modalityTypeMapper[
+                        modalityType as keyof typeof ModalityType
+                      ]
+                    }
                   </option>
                 ))}
               </Select>
@@ -293,53 +325,68 @@ const RegistrationData: NextPage = () => {
                 )}
               </Select>
             </div>
-            {modalityTypeWatch === "REGULAR" && <><div className="mt-2 flex items-center gap-2">
-              <input
-                className="checkbox"
-                type="checkbox"
-                id="specialStudent"
-                disabled={!isValidApplicationPeriod}
-                {...register("specialStudent")}
-              />
-              <label htmlFor="specialStudent">
-                Tenho interesse em concorrer como aluno especial caso não seja
-                selecionado como aluno regular e obtenha pontuação suficiente
-                para ingressar como aluno especial.
-              </label>
-            </div>
-              <div className="mt-2 flex items-center gap-2">
-                <input
-                  className="checkbox"
-                  type="checkbox"
-                  id="scholarship"
-                  disabled={!isValidApplicationPeriod}
-                  {...register("scholarship")}
-                />
-                <label htmlFor="scholarship">
-                  Tenho interesse em concorrer a bolsa de estudo.
-                </label>
-              </div>
-            </>}
-
-            {modalityTypeWatch === "SPECIAL" && researchLineWatch &&
+            {modalityTypeWatch === "REGULAR" && (
               <>
-                <TextArea
-                  name="tutors"
-                  label="Rankear tutores da linha de pesquisa selecionada"
-                  placeholder="Indique ao menos um tutor e ranqueie sua escolha. Ex: 1- João, 2- Maria, 3- José"
-                  register={register}
-                  error={errors.tutors}
-                  maxLength={255}
-                  required
-                />
-                {isLoadingResearchLine ?
-                  <div className="animate-pulse h-10 w-full bg-slate-300" />
-                  :
-                  <p className="font-medium">Lista de tutores: <span className="font-normal">{researchLine?.TutorResearchLine.map((tutor) => tutor.name).join(", ")}</span></p>
-                }
-                <p className="font-medium text-red-500">Obs: A indicação não necessariamente vai ser seguida pela ordem do candidato.</p>
+                <div className="mt-2 flex items-center gap-2">
+                  <input
+                    className="checkbox"
+                    type="checkbox"
+                    id="specialStudent"
+                    disabled={!isValidApplicationPeriod}
+                    {...register("specialStudent")}
+                  />
+                  <label htmlFor="specialStudent">
+                    Tenho interesse em concorrer como aluno especial caso não
+                    seja selecionado como aluno regular e obtenha pontuação
+                    suficiente para ingressar como aluno especial.
+                  </label>
+                </div>
+                <div className="mt-2 flex items-center gap-2">
+                  <input
+                    className="checkbox"
+                    type="checkbox"
+                    id="scholarship"
+                    disabled={!isValidApplicationPeriod}
+                    {...register("scholarship")}
+                  />
+                  <label htmlFor="scholarship">
+                    Tenho interesse em concorrer a bolsa de estudo.
+                  </label>
+                </div>
               </>
-            }
+            )}
+
+            {modalityTypeWatch === "SPECIAL" &&
+              researchLineWatch &&
+              modalityWatch === "MASTER" && (
+                <>
+                  <TextArea
+                    name="tutors"
+                    label="Rankear tutores da linha de pesquisa selecionada"
+                    placeholder="Indique ao menos um tutor e ranqueie sua escolha. Ex: 1- João, 2- Maria, 3- José"
+                    register={register}
+                    error={errors.tutors}
+                    maxLength={255}
+                    required
+                  />
+                  {isLoadingResearchLine ? (
+                    <div className="h-10 w-full animate-pulse bg-slate-300" />
+                  ) : (
+                    <p className="font-medium">
+                      Lista de tutores:{" "}
+                      <span className="font-normal">
+                        {researchLine?.TutorResearchLine.map(
+                          (tutor) => tutor.name
+                        ).join(", ")}
+                      </span>
+                    </p>
+                  )}
+                  <p className="font-medium text-red-500">
+                    Obs: A indicação não necessariamente vai ser seguida pela
+                    ordem do candidato.
+                  </p>
+                </>
+              )}
           </div>
 
           {isLoadingRegistrationDataDocuments && (
@@ -378,7 +425,6 @@ const RegistrationData: NextPage = () => {
                 </div>
               </div>
             )}
-
 
           <div className="mt-5 flex items-center justify-between gap-2">
             <button

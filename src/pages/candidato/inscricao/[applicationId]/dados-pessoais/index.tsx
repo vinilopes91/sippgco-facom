@@ -419,7 +419,7 @@ const PersonalData: NextPage = () => {
                 required
               />
             </div>
-            <h3 className="text-lg font-medium mt-4">Endereço</h3>
+            <h3 className="mt-4 text-lg font-medium">Endereço</h3>
             <div className="grid grid-cols-3 gap-2">
               <Controller
                 control={control}
