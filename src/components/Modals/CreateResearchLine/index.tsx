@@ -116,8 +116,8 @@ const CreateResearchLineModal = (
         <div className="flex flex-col space-y-2">
           <Input
             name="name"
-            label="Nome completo"
-            placeholder="Nome completo"
+            label="Nome"
+            placeholder="Nome da linha de pesquisa"
             register={register}
             error={errors.name}
             maxLength={30}
