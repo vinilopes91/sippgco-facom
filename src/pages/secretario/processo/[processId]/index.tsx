@@ -84,13 +84,13 @@ const ProcessDetail: NextPage = () => {
       void ctx.process.get.invalidate({
         id: processId,
       });
-      toast.success("Processo finalizado com sucesso!");
+      toast.success("Resultado divulgado com sucesso!");
       router.back();
     },
     onError: (e) => {
       handleTRPCError(
         e,
-        "Falha ao finalizar processo! Tente novamente mais tarde."
+        "Falha ao divulgar resultado! Tente novamente mais tarde."
       );
     },
   });
@@ -120,35 +120,43 @@ const ProcessDetail: NextPage = () => {
       <div className="mt-6 rounded-lg bg-white p-6 drop-shadow-sm">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold">Dados gerais</h2>
-          {processData.status === "DRAFT" && (
-            <button
-              className={clsx("btn-primary btn", isActivating && "loading")}
-              type="button"
-              disabled={isActivating}
-              onClick={() =>
-                activateProcess({
-                  id: processData.id,
-                })
-              }
-            >
-              Ativar processo
-            </button>
-          )}
-          {processData.status === "ACTIVE" &&
-            processData.applicationsResultAnnounced && (
+
+          <div className="flex items-center gap-2">
+            {processData.applicationsResultAnnounced && (
+              <h2 className="text-2xl font-bold text-primary-400">
+                Resultado divulgado
+              </h2>
+            )}
+            {processData.status === "DRAFT" && (
               <button
-                className={clsx("btn-primary btn", isFinishing && "loading")}
+                className={clsx("btn-primary btn", isActivating && "loading")}
                 type="button"
-                disabled={isFinishing}
+                disabled={isActivating}
                 onClick={() =>
-                  finishProcess({
+                  activateProcess({
                     id: processData.id,
                   })
                 }
               >
-                Finalizar processo
+                Ativar processo
               </button>
             )}
+            {processData.status === "ACTIVE" &&
+              processData.applicationsResultAnnounced && (
+                <button
+                  className={clsx("btn-primary btn", isFinishing && "loading")}
+                  type="button"
+                  disabled={isFinishing}
+                  onClick={() =>
+                    finishProcess({
+                      id: processData.id,
+                    })
+                  }
+                >
+                  Finalizar processo
+                </button>
+              )}
+          </div>
         </div>
         <div className="mt-2">
           <p className="font-medium">
